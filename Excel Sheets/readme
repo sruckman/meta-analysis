@@ -1,0 +1,36 @@
+Key for meta analysis data sheet:
+Study = study name (multiple rows with same name and numbers indicate same study with multiple rows, a/b indicates multiple studies in the same year)
+Species = genus species 
+Color1-Color3 = color polymorphism present from light to dark
+Pattern = body, dorsal, chest, or head
+Classification = color genetics (melanocortin (blacks/browns), carotenoid (reds), xanthophore (yellows), or auxilary (blues))
+Age = mature, immature, or both
+Sex = males, females, or both
+Location = location of study (captivity, field, or lab-reared)
+Season = season of color seen (year round, breeding, or non-breeding)
+Aggression Units = how the study measured aggression 
+
+Statistics to calculate effect size:
+  sample size (overall sample size)
+  stat test (statistic used)
+  test statistic (value)
+  df1 and df2 (degrees of freedom)
+  p-value
+  r (correlation coefficient)
+  n1 and n2 (sample size of the two groups)
+  mean1 and mean2 (means of the two groups)
+  se1 and se2 (standard errors of the two groups)
+  var1 and var2 (variances of the two groups)
+  sd1 and sd2 (standard deviations of the two groups)
+
+Color of rows:
+  white row = usable paper
+  dark grey = cannot use paper based on exclusion criteria
+
+Exclusion Criteria:
+  Non-human study
+  individual measure of both coloration pattern and aggression against a con-specific
+  natural color variation within the same species
+  report relevant statistics to formulate effect size estimate
+  analyze data in comparison between color morphs
+  
