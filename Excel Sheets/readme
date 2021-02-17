@@ -3,10 +3,10 @@ Study = study name (multiple rows with same name and numbers indicate same study
 Species = genus species 
 Color1-Color3 = color polymorphism present from light to dark
 Pattern = body, dorsal, chest, or head
-Classification = color genetics (melanocortin (blacks/browns), carotenoid (reds), xanthophore (yellows), or auxilary (blues))
+Classification = color genetics (melanocortin (blacks/browns), carotenoid (yellows/reds), xanthophore (yellows), or auxilary (blues))
 Age = mature, immature, or both
 Sex = males, females, or both
-Location = location of study (captivity, field, or lab-reared)
+Location = location of study (captivity, field, lab-reared, or domesticated)
 Season = season of color seen (year round, breeding, or non-breeding)
 Aggression Units = how the study measured aggression 
 
@@ -27,7 +27,7 @@ Color of rows:
   white row = usable paper
   dark grey = cannot use paper based on exclusion criteria
 
-Exclusion Criteria:
+Inlusion Criteria:
   Non-human study
   individual measure of both coloration pattern and aggression against a con-specific
   natural color variation within the same species
