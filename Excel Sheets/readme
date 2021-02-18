@@ -22,10 +22,18 @@ Statistics to calculate effect size:
   se1 and se2 (standard errors of the two groups)
   var1 and var2 (variances of the two groups)
   sd1 and sd2 (standard deviations of the two groups)
+  
+  Statistics Combinations:
+	Means: means, standard deviations or standard errors or variances, and sample sizes for both groups
+	T test: t value, degrees of freedom or sample size, and p-value
+	Wald: wald value and sample sizes for both groups
+	Chi-square test: chi-square value, degrees of freedom, and sample size
+	ANOVA: F statistic and degrees of freedom or sample sizes for both groups
+	Linear model: F statistic and both degrees of freedom
 
 Color of rows:
   white row = usable paper
-  dark grey = cannot use paper based on exclusion criteria
+  dark grey = cannot use paper based on exclusion criteria (negative of inclusion criteria)
 
 Inlusion Criteria:
   Non-human study
