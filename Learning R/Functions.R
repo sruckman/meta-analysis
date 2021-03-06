@@ -1,7 +1,6 @@
 #Functions
-#Read in the data (surveys.csv
-setwd("~/Documents/GitHub/meta-analysis/Learning R")
-surveys <- read.csv("surveys.csv")
+#Read in the data (surveys.csv)
+surveys <- read.csv("C:\\Users\\sarah\\Documents\\GitHub\\meta-analysis\\Learning R\\surveys.csv")
 
 #We have a collaborator that realizes there are tons of issues with the
 #data including that in 1984 the weights and hindfoot lengths have been
@@ -16,7 +15,7 @@ for (i in 1:dim(surveys)[1]) {
   if (surveys$year[i] == 1984) {
     surveys_adjusted$weight[i] <- surveys$weight[i]*1.1245697375083747+ 10
     surveys_adjusted$hindfoot_length[i] <- 
-      surveys$hindfoot_length[i]*1.1245697375083747 + 10
+      surveys$hindfoot_length[i]*1.1245697375093747 + 10
   } 
 }
 

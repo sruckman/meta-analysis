@@ -1,9 +1,6 @@
 #For Loops and If statements
 #Read in the data (surveys.csv)
-setwd("~/Documents/GitHub/meta-analysis/Learning R")
 survey <- read.csv("C:\\Users\\sarah\\Documents\\GitHub\\meta-analysis\\Learning R\\surveys.csv")
-survey <- read.csv("surveys.csv")
-
 
 #Let's visualize the data using a histogram of the weights
 hist(survey$weight, main = "Distribution of weights", 
