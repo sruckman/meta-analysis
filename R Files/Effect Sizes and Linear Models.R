@@ -60,20 +60,20 @@ missingrow
 ####################### Mixed Effects Model #########################
 #Fit our entire model: Fisher Z values
 
-fitZ <- lme(Fisher_Z ~ 1, random = list(~1|Study, ~1|Species, ~1|Pattern, ~1|Age, 
+fitZ <- lme(Fisher_Z ~ 1, random = list(~1|Authors, ~1|Species, ~1|Pattern, ~1|Age, 
                                         ~1|Sex, ~1|Location, ~1|Season), 
             data=metadat)
 summary(fitZ)
 
 #Fixed effects:  Fisher_Z ~ 1 
 #                Value  Std.Error  DF  t-value p-value
-#(Intercept) 0.2918458 0.04649168 145 6.277377       0
+#(Intercept) 0.2652797 0.05204827  80 5.096802       0
 
 #QREML
 sum(fitZ$residuals^2)
 
-#k=148, df = k-1 = 147, X^2 with df = 147 = 176.294
-#Since 141.642 is much less than 176.294, we fail to reject our null
+#k=149, df = k-1 = 148, X^2 with df = 148 = 177.390
+#Since 175.4594 is much less than 177.390, we fail to reject our null
 #There is no significant heterogeneity
 
 #Subset the data based on class of pigments:
@@ -82,57 +82,57 @@ sum(fitZ$residuals^2)
 rmel <- subset(metadat, metadat$Classification == "melanocortin")
 
 fitZmel <- lme(Fisher_Z ~ 1,  
-               random = list(~1|Study, ~1|Species, ~1|Age, ~1|Sex, ~1|Location, 
+               random = list(~1|Authors, ~1|Species, ~1|Age, ~1|Sex, ~1|Location, 
                              ~1|Season), data=rmel)
 summary(fitZmel)
 
 #Fixed effects:  Fisher_Z ~ 1 
-#                Value  Std.Error DF  t-value p-value
-#(Intercept)  0.245422 0.04373504 68 5.611563       0
+#                Value   Std.Error DF  t-value p-value
+#(Intercept)  0.2530529 0.06345467 40 3.987932   3e-04
 
 #QREML
 sum(fitZmel$residuals^2)
 
-#k=70, df = k-1 = 69, X^2 with df = 69 = 89.391
-#Since 31.17634 is much less than 89.391, we fail to reject our null
+#k=71, df = k-1 = 70, X^2 with df = 70 = 90.531
+#Since 23.35974 is much less than 90.531, we fail to reject our null
 #There is no significant heterogeneity
 
 #Carotenoid:
 rcarot <- subset(metadat, metadat$Classification == "carotenoid")
 
 fitZcarot <- lme(Fisher_Z ~ 1, 
-                 random = list(~1|Study, ~1|Species, ~1|Age, ~1|Sex, ~1|Location, 
+                 random = list(~1|Authors, ~1|Species, ~1|Age, ~1|Sex, ~1|Location, 
                                ~1|Season), data=rcarot)
 summary(fitZcarot)
 
 #Fixed effects:  Fisher_Z ~ 1 
-#                Value  Std.Error DF  t-value p-value
-#(Intercept) 0.09518496 0.05302605 57 1.79506  0.0779
+#                Value  Std.Error DF t-value p-value
+#(Intercept) 0.1200968 0.06096008 30 1.97009  0.0581
 
 #QREML
 sum(fitZcarot$residuals^2)
 
 #k=57, df = k-1 = 56, X^2 with df = 56 = 74.468
-#Since 23.09871 is much less than 74.468, we fail to reject our null
+#Since 46.42697 is much less than 74.468, we fail to reject our null
 #There is no significant heterogeneity
 
 #Unknown:
 runknown <- subset(metadat, metadat$Classification == "unknown")
 
 fitZunknown <- lme(Fisher_Z ~ 1, 
-                 random = list(~1|Study, ~1|Species, ~1|Age, ~1|Sex, ~1|Location, 
+                 random = list(~1|Authors, ~1|Species, ~1|Age, ~1|Sex, ~1|Location, 
                                ~1|Season), data=runknown)
 summary(fitZunknown)
 
 #Fixed effects:  Fisher_Z ~ 1 
 #                Value  Std.Error DF  t-value p-value
-#(Intercept)  0.475266  0.1159627 10 4.098439  0.0021
+#(Intercept)  0.5550996 0.1493901  7 3.715772  0.0075
 
 #QREML
 sum(fitZunknown$residuals^2)
 
 #k=10, df = k-1 = 9, X^2 with df = 9 = 16.919
-#Since 3.114768 is much less than 16.919, we fail to reject our null
+#Since 4.011728 is much less than 16.919, we fail to reject our null
 #There is no significant heterogeneity
 
 #None:
@@ -156,27 +156,27 @@ sum(fitZnone$residuals^2)
 
 ####################### Confidence Intervals #######################
 #Entire Model:
-Zmean <- 0.2918458 
-uci <- 0.2918458 + 1.96*0.04649168
-lci <- 0.2918458 - 1.96*0.04649168
+Zmean <- 0.2652797  
+uci <- 0.2652797 + 1.96*0.05204827
+lci <- 0.2652797 - 1.96*0.05204827
 print(c(lci,uci))
 
 #Melanocortin:
-Zmel <- 0.245422 
-ucimel <- 0.245422 + 1.96*0.04373504
-lcimel <- 0.245422 - 1.96*0.04373504
+Zmel <- 0.2530529  
+ucimel <- 0.2530529 + 1.96*0.06345467
+lcimel <- 0.2530529 - 1.96*0.06345467
 print(c(lcimel,ucimel))
 
 #Carotenoid:
-Zcar <- 0.09518496 
-ucicar <- 0.09518496 + 1.96*0.05302605
-lcicar <- 0.09518496 - 1.96*0.05302605
+Zcar <- 0.1200968  
+ucicar <- 0.1200968 + 1.96*0.06096008
+lcicar <- 0.1200968 - 1.96*0.06096008
 print(c(lcicar,ucicar))
 
 #Unknown:
-Zun <- 0.475266   
-uciun <- 0.475266 + 1.96*0.1159627
-lciun <- 0.475266 - 1.96*0.1159627
+Zun <- 0.5550996   
+uciun <- 0.5550996 + 1.96*0.1493901
+lciun <- 0.5550996 - 1.96*0.1493901
 print(c(lciun,uciun))
 
 #None:
@@ -243,10 +243,10 @@ points(Zmean,-0.5,pch=16,xpd=NA)
 abline(v = 0, lty =3)
 #Add axis labels
 title(xlab = "Fisher Z")
-text(-1,-0.5,"Overall", cex = 0.8, adj = c(0,0))
-text(-1,0.8,"Melanocortin", cex = 0.8, adj = c(0,0))
-text(-1,0.6,"Carotenoid", cex = 0.8, adj = c(0,0))
-text(-1,0.4,"Unknown", cex = 0.8, adj = c(0,0))
-text(-1,0.2,"Eye", cex = 0.8, adj = c(0,0))
+text(-1,-0.5,"Overall", cex = 0.9, adj = c(0,0))
+text(-1,0.8,"Melanocortin", cex = 0.9, adj = c(0,0))
+text(-1,0.6,"Carotenoid", cex = 0.9, adj = c(0,0))
+text(-1,0.4,"Unknown", cex = 0.9, adj = c(0,0))
+text(-1,0.2,"Eye", cex = 0.9, adj = c(0,0))
 
 #Export 5x5
