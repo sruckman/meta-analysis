@@ -4,6 +4,7 @@ setwd("C:\\Users\\sarah\\Documents\\GitHub\\meta-analysis")
 library(nlme)
 library(DescTools)
 library(scales)
+library(metafor)
 
 ####################### Effect Size Calculations ########################
 #Effect Sizes will be in rho and Fisher Z values
@@ -62,13 +63,14 @@ for (i in 1:length(metadat$Study)){
 missingrow <- subset(missingrow, missingrow != 0)
 missingrow
 
-write.csv(metadat, "metafull.csv")
+#write.csv(metadat, "metafull.csv")
 ####################### Mixed Effects Model #########################
 ### Fit our entire model: Fisher Z values ###
 
 fitZ <- lme(Fisher_Z ~ 1, 
             random = list(~1|Authors, ~1|Species, ~1|Pattern, ~1|Age, 
-                          ~1|Sex, ~1|Location, ~1|Season, ~1|Plasticity), 
+                          ~1|Sex, ~1|Location, ~1|Season, ~1|Plasticity, 
+                          ~1|Classification), 
             weights = varFixed(~Weight), data=metadat)
 summary(fitZ)
 
@@ -76,15 +78,50 @@ summary(fitZ)
 #                Value  Std.Error  DF  t-value p-value
 #(Intercept) 0.3059841 0.05830351  80 5.248125       0
 
-#QREML
+#QREML for Heterogeneity Test
 sum(fitZ$residuals^2)
 
 #k=149, df = k-1 = 148, X^2 with df = 148 = 177.390
-#Since 179.6119 is more than 177.390, we reject our null
+#Since 196.262 is more than 177.390, we reject our null
 #There is significant heterogeneity
 
-### Subset the data based on class of pigments: ###
+#Publication Bias (Egger's Test):
+ranktest(x = metadat$Fisher_Z, sei = metadat$SE)
 
+#Rank Correlation Test for Funnel Plot Asymmetry
+#Kendall's tau = 0.1824, p = 0.0011
+
+#There is a significant publication bias. 
+
+#### Only Using Known Color Genes ####
+known <- subset(metadat, metadat$Classification != "unknown")
+
+fitkn <- lme(Fisher_Z ~ 1, 
+            random = list(~1|Authors, ~1|Species, ~1|Pattern, ~1|Age, 
+                          ~1|Sex, ~1|Location, ~1|Season, ~1|Plasticity, 
+                          ~1|Classification), 
+            weights = varFixed(~Weight), data=known)
+summary(fitkn)
+
+#Fixed effects:  Fisher_Z ~ 1 
+#                Value  Std.Error  DF  t-value p-value
+#(Intercept) 0.2365914 0.04686318 73 5.048556       0
+
+#QREML
+sum(fitkn$residuals^2)
+
+#k=131, df = k-1 = 130, X^2 with df = 130 = 157.610
+#Since 79.2127 is less than 157.610, we do not reject our null
+#There is no significant heterogeneity
+
+ranktest(x = known$Fisher_Z, sei = known$SE)
+
+#Rank Correlation Test for Funnel Plot Asymmetry
+#Kendall's tau = 0.1044, p = 0.0801
+
+#There is no significant publication bias
+
+#### Subset the data based on class of pigments: ####
 #### Melanocortin: ####
 rmel <- subset(metadat, metadat$Classification == "melanocortin")
 
@@ -104,6 +141,14 @@ sum(fitZmel$residuals^2)
 #k=71, df = k-1 = 70, X^2 with df = 70 = 90.531
 #Since 27.273 is much less than 90.531, we fail to reject our null
 #There is no significant heterogeneity
+
+#Publication Bias (Egger's Test):
+ranktest(x = rmel$Fisher_Z, sei = rmel$SE)
+
+#Rank Correlation Test for Funnel Plot Asymmetry
+#Kendall's tau = 0.1834, p = 0.0267
+
+#There is a significant publication bias.
 
 #### Eumelanin: ####
 reu <- subset(metadat, metadat$Eu_Pheomelanin == "eumelanin")
@@ -125,6 +170,14 @@ sum(fitZeu$residuals^2)
 #Since 15.19769 is much less than 54.572, we fail to reject our null
 #There is no significant heterogeneity
 
+#Publication Bias (Egger's Test):
+ranktest(x = reu$Fisher_Z, sei = reu$SE)
+
+#Rank Correlation Test for Funnel Plot Asymmetry
+#Kendall's tau = 0.2859, p = 0.0115
+
+#There is a significant publication bias.
+
 #### Pheomelanin: ####
 rph <- subset(metadat, metadat$Eu_Pheomelanin == "pheomelanin")
 
@@ -144,6 +197,14 @@ sum(fitZph$residuals^2)
 #k=32, df = k-1 = 31, X^2 with df = 31 = 44.985
 #Since 13.37308 is much less than 44.985, we fail to reject our null
 #There is no significant heterogeneity
+
+#Publication Bias (Egger's Test):
+ranktest(x = rph$Fisher_Z, sei = rph$SE)
+
+#Rank Correlation Test for Funnel Plot Asymmetry
+#Kendall's tau = -0.0550, p = 0.6695
+
+#There is no significant publication bias.
 
 #### Carotenoid: ####
 rcarot <- subset(metadat, metadat$Classification == "carotenoid")
@@ -165,6 +226,14 @@ sum(fitZcarot$residuals^2)
 #Since 46.50761 is much less than 76.778, we fail to reject our null
 #There is no significant heterogeneity
 
+#Publication Bias (Egger's Test):
+ranktest(x = rcarot$Fisher_Z, sei = rcarot$SE)
+
+#Rank Correlation Test for Funnel Plot Asymmetry
+#Kendall's tau = 0.0380, p = 0.6750
+
+#There is no significant publication bias.
+
 #### Unknown: ####
 runknown <- subset(metadat, metadat$Classification == "unknown")
 
@@ -176,33 +245,22 @@ summary(fitZunknown)
 
 #Fixed effects:  Fisher_Z ~ 1 
 #                Value  Std.Error DF  t-value p-value
-#(Intercept)  0.5394419 0.1921933  5 2.806768  0.0377
+#(Intercept)  0.9531082  0.316791 11 3.008634  0.0119
 
 #QREML
 sum(fitZunknown$residuals^2)
 
-#k=8, df = k-1 = 7, X^2 with df = 7 = 14.067
-#Since 3.878083 is much less than 14.067, we fail to reject our null
-#There is no significant heterogeneity
-
-#### Eye: ####
-rnone <- subset(metadat, metadat$Classification == "none")
-
-fitZnone <- lme(Fisher_Z ~ 1, 
-                random = list(~1|Authors, ~1|Species), 
-                weights = varFixed(~Weight), data=rnone)
-summary(fitZnone)
-
-#Fixed effects:  Fisher_Z ~ 1 
-#                Value  Std.Error DF  t-value p-value
-#(Intercept)  1.574762 0.5345479  8  2.945971  0.0185
-
-#QREML
-sum(fitZnone$residuals^2)
-
-#k=10, df = k-1 = 9, X^2 with df = 9 = 16.919
-#Since 26.36726 is greater than 16.919, we reject our null
+#k=18, df = k-1 = 17, X^2 with df = 17 = 27.587
+#Since 100.8544 is much greater than 27.587, we reject our null
 #There is significant heterogeneity
+
+#Publication Bias (Egger's Test):
+ranktest(x = runknown$Fisher_Z, sei = runknown$SE)
+
+#Rank Correlation Test for Funnel Plot Asymmetry
+#Kendall's tau = 0.4303, p = 0.0155
+
+#There is a significant publication bias.
 
 #### Vertebrates: ####
 rvert <- subset(metadat, metadat$Vert_Invert == "vertebrate")
@@ -224,6 +282,14 @@ sum(fitZvert$residuals^2)
 #Since 176.9077 is greater than 168.613, we reject our null
 #There is significant heterogeneity
 
+#Publication Bias (Egger's Test):
+ranktest(x = rvert$Fisher_Z, sei = rvert$SE)
+
+#Rank Correlation Test for Funnel Plot Asymmetry
+#Kendall's tau = 0.1698, p = 0.0031
+
+#There is a significant publication bias.
+
 #### Invertebrates: ####
 rin <- subset(metadat, metadat$Vert_Invert == "invertebrate")
 
@@ -241,10 +307,72 @@ summary(fitZin)
 sum(fitZin$residuals^2)
 
 #k=8, df = k-1 = 7, X^2 with df = 7 = 14.067
-#Since 2.234939 is greater than 14.067, we fail to reject our null
+#Since 2.234939 is less than 14.067, we fail to reject our null
 #There is no significant heterogeneity
 
+#Publication Bias (Egger's Test):
+ranktest(x = rin$Fisher_Z, sei = rin$SE)
 
+#Rank Correlation Test for Funnel Plot Asymmetry
+#Kendall's tau = 0.6910, p = 0.0178
+
+#There is a significant publication bias.
+
+#### Plastic: ####
+rpl <- subset(metadat, metadat$Plasticity == "Plastic")
+
+fitZpl <- lme(Fisher_Z ~ 1, 
+              random = list(~1|Authors, ~1|Species, ~1|Pattern, 
+                            ~1|Sex, ~1|Location, ~1|Plasticity), 
+              weights = varFixed(~Weight), data=rpl)
+summary(fitZpl)
+
+#Fixed effects:  Fisher_Z ~ 1 
+#                Value  Std.Error DF  t-value p-value
+#(Intercept)  0.3703848 0.1340427 33 2.763185  0.0093
+
+#QREML
+sum(fitZpl$residuals^2)
+
+#k=49, df = k-1 = 48, X^2 with df = 48 = 65.171
+#Since 107.8682 is greater than 65.171, we reject our null
+#There is significant heterogeneity
+
+#Publication Bias (Egger's Test):
+ranktest(x = rpl$Fisher_Z, sei = rpl$SE)
+
+#Rank Correlation Test for Funnel Plot Asymmetry
+#Kendall's tau = 0.2443, p = 0.0142
+
+#There is a significant publication bias.
+
+#### Non-Plastic: ####
+rnpl <- subset(metadat, metadat$Plasticity == "No")
+
+fitZnpl <- lme(Fisher_Z ~ 1, 
+              random = list(~1|Authors, ~1|Species, ~1|Pattern, 
+                            ~1|Sex, ~1|Location, ~1|Plasticity), 
+              weights = varFixed(~Weight), data=rnpl)
+summary(fitZnpl)
+
+#Fixed effects:  Fisher_Z ~ 1 
+#                 Value  Std.Error DF  t-value p-value
+#(Intercept)  0.2704223 0.04637794 48 5.830839       0
+
+#QREML
+sum(fitZnpl$residuals^2)
+
+#k=100, df = k-1 = 99, X^2 with df = 99 = 123.225	
+#Since 46.37348 is less than 123.225, we fail to reject our null
+#There is no significant heterogeneity
+
+#Publication Bias (Egger's Test):
+ranktest(x = rnpl$Fisher_Z, sei = rnpl$SE)
+
+#Rank Correlation Test for Funnel Plot Asymmetry
+#Kendall's tau = 0.1132, p = 0.0997
+
+#There is no significant publication bias.
 ####################### Wald Tests #######################
 
 ####################### Confidence Intervals #######################
@@ -253,6 +381,12 @@ Zmean <- 0.3059841
 uci <- Zmean + 1.96*0.05830351
 lci <- Zmean - 1.96*0.05830351
 print(c(lci,uci))
+
+#Only Known Color Genetics:
+Zknown <- 0.2365914 
+ucikn <- Zknown + 1.96*0.04686318
+lcikn <- Zknown - 1.96*0.04686318
+print(c(lcikn,ucikn))
 
 #Melanocortin:
 Zmel <- 0.2851931  
@@ -280,16 +414,10 @@ lcicar <- Zcar - 1.96*0.06641673
 print(c(lcicar,ucicar))
 
 #Unknown:
-Zun <- 0.5394419   
-uciun <- Zun + 1.96*0.1921933
-lciun <- Zun - 1.96*0.1921933
+Zun <- 0.9531082     
+uciun <- Zun + 1.96*0.316791
+lciun <- Zun - 1.96*0.316791
 print(c(lciun,uciun))
-
-#Eye:
-Znone <- 1.574762   
-ucinone <- Znone + 1.96*0.5345479
-lcinone <- Znone - 1.96*0.5345479
-print(c(lcinone,ucinone))
 
 #Vertebrates
 Zvert <- 0.292554  
@@ -303,14 +431,20 @@ uciin <- Zin + 1.96*0.1305277
 lciin <- Zin - 1.96*0.1305277
 print(c(lciin,uciin))
 
-####################### Plots #######################
-#Funnel Plot:
-Zmeans <- mean(metadat$Fisher_Z)
-Zse <- mean(metadat$SE)
-uciZ <- Zmeans + 1.96*Zse 
-lciZ <- Zmeans - 1.96*Zse
-print(c(lciZ,uciZ))
+#Plastic
+Zpl <- 0.3703848 
+ucipl <- Zpl + 1.96*0.1340427
+lcipl <- Zpl - 1.96*0.1340427
+print(c(lcipl, ucipl))
 
+#Non-Plastic
+Znpl <- 0.2704223
+ucinpl <- Znpl + 1.96*0.04637794
+lcinpl <- Znpl - 1.96*0.04637794
+print(c(lcinpl, ucinpl))
+
+####################### Plots #######################
+#### Funnel Plot: ####
 cols <- rep(0,length(metadat$Classification))
 for (i in 1:length(metadat$Classification)){
   if (metadat$Classification[i] == "carotenoid"){
@@ -321,70 +455,73 @@ for (i in 1:length(metadat$Classification)){
     cols[i] <- "orangered3"
   } else if (metadat$Classification[i] == "unknown"){
     cols[i] <- "darkorchid4"
-  } else if (metadat$Classification[i] == "none"){
-    cols[i] <- "dodgerblue4"
   } 
 }
 
-plot(metadat$Fisher_Z, metadat$SE, pch = 20, xlab = "Fisher Z",
-     ylab = "Standard Error", xlim=c(-3,3),
-     col=alpha(cols,0.75))
-abline(v=Zmeans, lty = 3)
-segments(Zmeans,1.05,uciZ,0)
-segments(Zmeans,1.05,lciZ,0)
-#abline(v=0,col="red")
-
-legend(x = -3.15, y = 1.02, 
-       legend = c("Carotenoid", "Eumelanin", "Pheomelanin", "Unknown", "Eye"),
-       fill = c("orange", "black","orangered3", "darkorchid4", "dodgerblue4"), cex = 0.7,
-       border = "white", box.col = "white")
+funnel(x = metadat$Fisher_Z, sei = metadat$SE, yaxis = "sei", 
+       xlab = "Fisher Z", col = alpha(cols, 0.75), back = "white",
+       xlim = c(-3.5,3), pch=20)
+legend(x = -3.73, y = -0.05, 
+       legend = c("Carotenoid", "Eumelanin", "Pheomelanin", "Unknown"),
+       fill = c("orange", "black","orangered3", "darkorchid4"), cex = 0.7,
+       border = "white", box.col = "white", )
 
 #Export 5x5
 
-#Fisher z plot for each model:
-plot(NA,xlim=c(-1,3),ylim=c(-1,1),axes=F,ann=F)
+#### Fisher z plot for each model: ####
+plot(NA,xlim=c(-1,3),ylim=c(-1,1.6),axes=F,ann=F)
 axis(1)
 #Fisher Z
 #Carotenoid
-segments(lcicar,1,ucicar,1);
-points(Zcar,1,pch=16,col = "orange",xpd=NA)
+segments(lcicar,1.2,ucicar,1.2);
+points(Zcar,1.2,pch=16,col = "orange",xpd=NA)
 #Eumelanin
-segments(lcieu,0.8,ucieu,0.8);
-points(Zeu,0.8,pch=16,col = "black",xpd=NA)
+segments(lcieu,1,ucieu,1);
+points(Zeu,1,pch=16,col = "black",xpd=NA)
 #Pheomelanin
-segments(lciph,0.6,uciph,0.6);
-points(Zph,0.6,pch=16,col = "orangered3",xpd=NA)
+segments(lciph,0.8,uciph,0.8);
+points(Zph,0.8,pch=16,col = "orangered3",xpd=NA)
 #Unknown
-segments(lciun,0.4,uciun,0.4);
-points(Zun,0.4,pch=16,col = "darkorchid4",xpd=NA)
-#Eye
-segments(lcinone,0.2,ucinone,0.2);
-points(Znone,0.2,pch=16,col = "dodgerblue4",xpd=NA)
+segments(lciun,0.6,uciun,0.6);
+points(Zun,0.6,pch=16,col = "darkorchid4",xpd=NA)
 #Vertebrates
-segments(lcivert,0,ucivert,0);
-points(Zvert,0,pch=16,col = "darkturquoise",xpd=NA)
+segments(lcivert,0.4,ucivert,0.4);
+points(Zvert,0.4,pch=16,col = "dodgerblue4",xpd=NA)
 #Invertebrates
-segments(lciin,-0.2,uciin,-0.2);
-points(Zin,-0.2,pch=16,col = "darkslategray4",xpd=NA)
+segments(lciin,0.2,uciin,0.2);
+points(Zin,0.2,pch=16,col = "dodgerblue2",xpd=NA)
+#Plastic
+segments(lcipl,0,ucipl,0);
+points(Zpl,0,pch=16,col = "darkgreen",xpd=NA)
+#Non-Plastic
+segments(lcinpl,-0.2,ucinpl,-0.2);
+points(Znpl,-0.2,pch=16,col = "mediumseagreen",xpd=NA)
+
 
 #Overall
 segments(lci,-0.6,uci,-0.6);
 points(Zmean,-0.6,pch=16,xpd=NA)
+#Color Genes Only
+segments(lciin,-0.8,uciin,-0.8);
+points(Zin,-0.8,pch=16,xpd=NA)
 #Melanin
-segments(lcimel,-0.8,ucimel,-0.8);
-points(Zmel,-0.8,pch=16,xpd=NA)
+segments(lcimel,-1,ucimel,-1);
+points(Zmel,-1,pch=16,xpd=NA)
+
 #Add dashed line at 0
 abline(v = 0, lty = 1)
 #Add axis labels
 title(xlab = "Fisher Z")
 text(-1,-0.6,"Overall", cex = 0.9, adj = c(0,0))
-text(-1,-0.8,"Melanocortin", cex = 0.9, adj = c(0,0))
-text(-1,1,"Carotenoid", cex = 0.9, adj = c(0,0))
-text(-1,0.8,"Eumelanin", cex = 0.9, adj = c(0,0))
-text(-1,0.6,"Pheomelanin", cex = 0.9, adj = c(0,0))
-text(-1,0.4,"Unknown", cex = 0.9, adj = c(0,0))
-text(-1,0.2,"Eye", cex = 0.9, adj = c(0,0))
-text(-1,0,"Vertebrates", cex = 0.9, adj = c(0,0))
-text(-1,-0.2,"Invertebrates", cex = 0.9, adj = c(0,0))
+text(-1,-0.8,"Only Known", cex = 0.9, adj = c(0,0))
+text(-1,-1,"Melanocortin", cex = 0.9, adj = c(0,0))
+text(-1,1.2,"Carotenoid", cex = 0.9, adj = c(0,0))
+text(-1,1,"Eumelanin", cex = 0.9, adj = c(0,0))
+text(-1,0.8,"Pheomelanin", cex = 0.9, adj = c(0,0))
+text(-1,0.6,"Unknown", cex = 0.9, adj = c(0,0))
+text(-1,0.4,"Vertebrates", cex = 0.9, adj = c(0,0))
+text(-1,0.2,"Invertebrates", cex = 0.9, adj = c(0,0))
+text(-1,0,"Plastic", cex = 0.9, adj = c(0,0))
+text(-1,-0.2,"Non-Plastic", cex = 0.9, adj = c(0,0))
 
 #Export 6x6
