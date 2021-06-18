@@ -63,7 +63,7 @@ for (i in 1:length(metadat$Study)){
 missingrow <- subset(missingrow, missingrow != 0)
 missingrow
 
-#write.csv(metadat, "metafull.csv")
+write.csv(metadat, "metafull.csv")
 ####################### Mixed Effects Model #########################
 ### Fit our entire model: Fisher Z values ###
 
@@ -84,7 +84,7 @@ sum(fitZ$residuals^2)
 #k=149, df = k-1 = 148, X^2 with df = 148 = 177.390
 #Since 196.262 is more than 177.390, we reject our null
 #There is significant heterogeneity
-
+ 
 #Publication Bias (Egger's Test):
 ranktest(x = metadat$Fisher_Z, sei = metadat$SE)
 
@@ -373,8 +373,6 @@ ranktest(x = rnpl$Fisher_Z, sei = rnpl$SE)
 #Kendall's tau = 0.1132, p = 0.0997
 
 #There is no significant publication bias.
-####################### Wald Tests #######################
-
 ####################### Confidence Intervals #######################
 #Entire Model:
 Zmean <- 0.3059841   
@@ -465,6 +463,41 @@ legend(x = -3.73, y = -0.05,
        legend = c("Carotenoid", "Eumelanin", "Pheomelanin", "Unknown"),
        fill = c("orange", "black","orangered3", "darkorchid4"), cex = 0.7,
        border = "white", box.col = "white", )
+
+#Export 5x5
+
+#Funnel Plot for Plasticity and Verts/Inverts
+colsv <- rep(0,length(metadat$Vert_Invert))
+for (i in 1:length(metadat$Vert_Invert)){
+  if (metadat$Vert_Invert[i] == "vertebrate"){
+    colsv[i] <- "dodgerblue2"
+  } else if (metadat$Vert_Invert[i] == "invertebrate"){
+    colsv[i] <- "deeppink"
+  } 
+}
+
+shapes <- rep(0,length(metadat$Plasticity))
+for (i in 1:length(metadat$Vert_Invert)){
+  if (metadat$Plasticity[i] == "Plastic"){
+    shapes[i] <- 20
+  } else if (metadat$Plasticity[i] == "No"){
+    shapes[i] <- 18
+  } 
+}
+
+
+funnel(x = metadat$Fisher_Z, sei = metadat$SE, yaxis = "sei", 
+       xlab = "Fisher Z", col = alpha(colsv, 0.75), back = "white",
+       xlim = c(-3.5,3), pch = shapes)
+words <- c("Vertebrate", "Invertebrate", "Plastic", "Non-Plastic")
+Cols <- c("dodgerblue2","deeppink", "black", "black")
+points <- c(15,15,20,18)
+ys <- c(0,0.05,0.1,0.15)
+for(i in 1:4){
+  points(x=-3.6, y=ys[i], pch=points[i], col=Cols[i])
+  text(x=-3.6,y=ys[i], labels=words[i], pos=4,cex=.75)
+}
+
 
 #Export 5x5
 
