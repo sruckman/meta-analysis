@@ -625,8 +625,8 @@ text(-2.1,-0.8,"Males*", cex = 0.9, adj = c(0,0), font = 2)
 #### Fisher Z for each Study #####
 order <- read.csv("Excel Sheets/species order.csv")
 order <- cbind(order,rep(0,length(order$Study)),rep(0,length(order$Study)))
-names(order)[40] <- "lci"
-names(order)[41] <- "uci"
+names(order)[41] <- "lci"
+names(order)[42] <- "uci"
 
 for (i in 1:length(order$Study)){
   order$uci[i] <- order$Fisher_Z[i] + 1.96*order$SE[i]
@@ -656,13 +656,32 @@ for (i in 1:length(order$Vert_Invert)){
   } 
 }
 
-plot(NA,xlim=c(-4,4),ylim=c(0,160),axes=F,ann=F)
+plot(NA,xlim=c(-4,4),ylim=c(0,310),axes=F,ann=F)
 axis(1)
-for (i in 1:length(order$Study)){
-  segments(order$lci[i],i+3,order$uci[i],i+3);
-  points(order$Fisher_Z[i],i+3,pch=shapesa[i],col = colsa[i],xpd=NA)
-  text(-4.1, i+3, order$Study[i], cex = 0.5, adj = c(0,0))
-}
 abline(v=0)
+for (i in 1:length(order$Study)){
+  segments(order$lci[i],i*2,order$uci[i],i*2);
+  points(order$Fisher_Z[i],i*2,pch=shapesa[i],col = colsa[i],xpd=NA)
+  text(-4.1, i*2, order$Study[i], cex = 0.5, adj = c(0,0))
+}
+
+#Export 15x10
 
 #### Fisher Z by Phylogeny ####
+plot(NA,xlim=c(-5,5),ylim=c(0,300),axes=F,ann=F)
+axis(1)
+polygon(x = c(-5.1,-5.1,4.5,4.5), y = c(2,8,8,2), col = alpha("gray", 0.8), density = NA)
+polygon(x = c(-5.1,-5.1,4.5,4.5), y = c(10,16,16,10), col = alpha("gray", 0.8), density = NA)
+polygon(x = c(-5.1,-5.1,4.5,4.5), y = c(18,46,46,18), col = alpha("gray", 0.8), density = NA)
+polygon(x = c(-5.1,-5.1,4.5,4.5), y = c(150,196,196,150), col = alpha("gray", 0.8), density = NA)
+polygon(x = c(-5.1,-5.1,4.5,4.5), y = c(220,300,300,220), col = alpha("gray", 0.8), density = NA)
+
+abline(v=0)
+for (i in 1:length(order$Study)){
+  segments(order$lci[i],i*2,order$uci[i],i*2);
+  points(order$Fisher_Z[i],i*2,pch=shapesa[i],col = colsa[i],xpd=NA)
+  text(-5.1, i*2, order$Study[i], cex = 0.5, adj = c(0,0))
+  text(3.5, i*2, order$Class[i], cex= 0.5, adj = c(0,0), font = 2)
+}
+
+#Export 15x10
