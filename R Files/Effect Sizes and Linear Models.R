@@ -458,7 +458,7 @@ for (i in 1:length(metadat$Classification)){
 
 funnel(x = metadat$Fisher_Z, sei = metadat$SE, yaxis = "sei", 
        xlab = "Fisher Z", col = alpha(cols, 0.75), back = "white",
-       xlim = c(-3.5,3), pch=20)
+       xlim = c(-3.5,3), pch=shapes)
 legend(x = -3.73, y = -0.05, 
        legend = c("Carotenoid", "Eumelanin", "Pheomelanin", "Unknown"),
        fill = c("orange", "black","orangered3", "darkorchid4"), cex = 0.7,
@@ -489,11 +489,11 @@ for (i in 1:length(metadat$Vert_Invert)){
 funnel(x = metadat$Fisher_Z, sei = metadat$SE, yaxis = "sei", 
        xlab = "Fisher Z", col = alpha(colsv, 0.75), back = "white",
        xlim = c(-3.5,3), pch = shapes)
-words <- c("Vertebrate", "Invertebrate", "Plastic", "Non-Plastic")
-Cols <- c("dodgerblue2","deeppink", "black", "black")
-points <- c(15,15,20,18)
-ys <- c(0,0.05,0.1,0.15)
-for(i in 1:4){
+words <- c("Carotenoid", "Eumelanin", "Pheomelanin", "Unknown", "Plastic", "Non-Plastic")
+Cols <- c("orange", "black","orangered3", "darkorchid4", "black", "black")
+points <- c(15,15,15,15,20,18)
+ys <- c(0,0.05,0.1,0.15,0.2,0.25)
+for(i in 1:6){
   points(x=-3.6, y=ys[i], pch=points[i], col=Cols[i])
   text(x=-3.6,y=ys[i], labels=words[i], pos=4,cex=.75)
 }

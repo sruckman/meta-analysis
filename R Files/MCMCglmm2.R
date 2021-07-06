@@ -319,40 +319,40 @@ summary(mixed1)
 #Thinning interval  = 100
 #Sample size  = 2000 
 
-#DIC: -179.7628 
+#DIC: -182.2326 
 
 #G-structure:  ~animal
-#post.mean  l-95% CI u-95% CI eff.samp
-#animal   0.02989 6.629e-08   0.1062     1414
+#       post.mean  l-95% CI u-95% CI eff.samp
+#animal   0.03103 1.35e-07   0.1157     1544
 
 #~Authors
-#post.mean  l-95% CI u-95% CI eff.samp
-#Authors   0.01292 1.002e-09  0.03757     1707
+#       post.mean  l-95% CI u-95% CI eff.samp
+#Authors   0.0131 4.504e-10  0.03838     1469
 
 #~Location
-#post.mean  l-95% CI u-95% CI eff.samp
-#Location    0.0287 5.758e-09   0.1024     2000
+#          post.mean  l-95% CI u-95% CI eff.samp
+#Location    0.03135 1.164e-10   0.1183     1060
 
 #~us(SE):units
-#post.mean l-95% CI u-95% CI eff.samp
-#SE:SE.units       5.1    3.606    6.696     2000
+#              post.mean l-95% CI u-95% CI eff.samp
+#SE:SE.units       5.058    3.548    6.596     2000
 
 #R-structure:  ~units
-#post.mean l-95% CI u-95% CI eff.samp
-#units   0.01113 0.001534  0.02656     1778
+#      post.mean l-95% CI u-95% CI eff.samp
+#units   0.01112 0.001884  0.02751     1875
 
 #Location effects: Fisher_Z ~ Eu_Pheomelanin + Vert_Invert + Sex + Plasticity 
 #                          post.mean l-95% CI u-95% CI eff.samp pMCMC
-#(Intercept)                 0.27409 -0.16427  0.72086     2164 0.211
-#Eu_Pheomelanineumelanin     0.11803 -0.04916  0.29166     2000 0.179
-#Eu_Pheomelaninpheomelanin   0.05907 -0.20167  0.29972     2000 0.643
-#Eu_Pheomelaninunknown       0.42004  0.11640  0.70004     2000 0.008 **
-#Vert_Invertvertebrate      -0.11121 -0.57538  0.34663     2000 0.579
-#Sexfemales                 -0.16919 -0.41832  0.06963     2000 0.183
-#Sexmales                   -0.10077 -0.32084  0.09929     2166 0.330
-#PlasticityPlastic           0.06858 -0.10308  0.22533     2000 0.413
+#(Intercept)                 0.27314 -0.15456  0.71858     2000 0.226
+#Eu_Pheomelanineumelanin     0.11840 -0.05627  0.28893     2000 0.171
+#Eu_Pheomelaninpheomelanin   0.05717 -0.18334  0.30560     2000 0.642
+#Eu_Pheomelaninunknown       0.41694  0.13685  0.74891     2000 0.018 *
+#Vert_Invertvertebrate      -0.10697 -0.56453  0.31942     2000 0.603
+#Sexfemales                 -0.16732 -0.42735  0.06138     2000 0.196
+#Sexmales                   -0.10210 -0.30223  0.10108     1535 0.332
+#PlasticityPlastic           0.06515 -0.10563  0.21659     2135 0.438
 #---
-#  Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+# Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
 #Model diagnostics
 plot(mixed1$Sol)
@@ -378,7 +378,7 @@ apply(rand,2,function(c) quantile(c,probs = c(0.025,0.5,0.975)))
 Rand_Var <- apply(rand,2,mean)
 Rand_Var
 #     animal     Authors    Location SE:SE.units       units 
-#0.005925896 0.002647712 0.005332847 0.983787733 0.002305812
+#0.006145046 0.002693605 0.005588416 0.983245529 0.002327404 
 
 #varA = phylogenetic level variance
 varA <- Rand_Var[1] 
@@ -403,19 +403,19 @@ varT = varA + varS + varE + varM + var3
 I2s <- varS/varT
 I2s*100
 #  Authors 
-#  0.2647712
+#  0.2693605
 
 ## species level heterogenity I^2s = varA/varT
 I2u <- varA/varT
 I2u*100
 # animal 
-# 0.5925896
+# 0.6145046
 
 ## phylogenetic heritability, phylogenetic signal H2 = varA/varA + varS + varE
 H2 = varA/(varA + varS + varE)
 H2
 # animal 
-# 0.5446886
+# 0.5503327
 
 # Proportion of variance explained by random factors
 Sol <- mixed1$Sol/apply(mixed1$Sol,1,sum)
@@ -427,7 +427,7 @@ pred_matrix <- predict(mixed1, interval = "prediction")
 pred_interval <- apply(pred_matrix, 2, mean)
 pred_interval
 #      fit        lwr        upr 
-#0.2045801 -0.8814606  1.2939119 
+#0.1975966 -0.8985029  1.2915561 
 
 #### Get the posterior mean and 95% CI of the overall effect size ####
 pred_matrix <- predict(mixed1, interval = "confidence")
@@ -452,19 +452,19 @@ summary(Egger)
 
 #Deviance Residuals: 
 #  Min        1Q    Median        3Q       Max  
-#-10.0723   -0.9282    0.1388    1.2390    9.3065  
+#-10.1320   -0.9268    0.0719    1.1480    9.2613  
 
 #Coefficients:
-#  Estimate Std. Error t value Pr(>|t|)  
-#(Intercept)  0.77841    0.37017   2.103   0.0372 *
-#  Precision   -0.09287    0.04310  -2.155   0.0328 *
+#             Estimate Std. Error t value Pr(>|t|)  
+#(Intercept)  0.83680    0.37016   2.261   0.0253 *
+# Precision  -0.09595    0.04310  -2.226   0.0275 *
 #  ---
 #  Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
 #(Dispersion parameter for gaussian family taken to be 5.728923)
 
-#Null deviance: 868.76  on 148  degrees of freedom
-#Residual deviance: 842.15  on 147  degrees of freedom
+#Null deviance: 870.54  on 148  degrees of freedom
+#Residual deviance: 842.14  on 147  degrees of freedom
 #AIC: 686.91
 
 #Number of Fisher Scoring iterations: 2
@@ -472,18 +472,18 @@ summary(Egger)
 Trim_Fill <- meta::trimfill(MR, metadata$SE)
 Trim_Fill
 
-#Number of studies combined: k = 174 (with 25 added studies)
+#Number of studies combined: k = 176 (with 27 added studies)
 
-#95%-CI     z p-value
-#Random effects model -0.0648 [-0.1193; -0.0102] -2.33  0.0200
+#                                         95%-CI     z p-value
+#Random effects model -0.0652 [-0.1198; -0.0107] -2.34  0.0190
 
 #Quantifying heterogeneity:
-#  tau^2 = 0.0957 [0.1436; 0.2486]; tau = 0.3093 [0.3789; 0.4986]
-#I^2 = 86.1% [84.2%; 87.7%]; H = 2.68 [2.52; 2.85]
+#  tau^2 = 0.0971 [0.1457; 0.2514]; tau = 0.3116 [0.3817; 0.5014]
+#I^2 = 86.2% [84.4%; 87.8%]; H = 2.69 [2.53; 2.86]
 
 #Test of heterogeneity:
-#  Q d.f.  p-value
-#1242.67  173 < 0.0001
+#      Q d.f.  p-value
+#1266.03  175 < 0.0001
 
 #Details on meta-analytical method:
 #- Inverse variance method
@@ -532,37 +532,37 @@ for(i in 1:6){
 #### Medians and 95% Credible Intervals ####
 emmeans(mixed1, ~ Eu_Pheomelanin, data=metadata)
 #Eu_Pheomelanin emmean lower.HPD upper.HPD
-#carotenoid      0.165    -0.119     0.471
-#eumelanin       0.277    -0.018     0.599
-#pheomelanin     0.217    -0.131     0.574
-#unknown         0.582     0.218     0.988
-Zcar <- 0.165; lcar <- -0.119; ucar <- 0.471
-Zeu <- 0.277; leu <- -0.018; ueu <- 0.599
-Zph <- 0.217; lph <- -0.131; uph <- 0.574
-Zun <- 0.582; lun <- 0.218; uun <- 0.988
+#carotenoid      0.162    -0.1143     0.489
+#eumelanin       0.283   -0.0533     0.570
+#pheomelanin     0.212   -0.1404     0.581
+#unknown         0.580    0.1668     0.976
+Zcar <- 0.162; lcar <- -0.1143; ucar <- 0.489
+Zeu <- 0.283; leu <- -0.0533; ueu <- 0.570
+Zph <- 0.212; lph <- -0.1404; uph <- 0.581
+Zun <- 0.580; lun <- 0.1668; uun <- 0.976
 
 emmeans(mixed1, ~ Vert_Invert, data=metadata)
 #Vert_Invert  emmean lower.HPD upper.HPD
-#invertebrate  0.367   -0.0528     0.769
-#vertebrate    0.253   -0.1049     0.559
-Zin <- 0.367; lin <- -0.0528; uin <- 0.769
-Zvert <- 0.253; lvert <- -0.1049; uvert <- 0.559
+#invertebrate  0.361   -0.0417     0.756
+#vertebrate    0.255   -0.0653     0.606
+Zin <- 0.361; lin <- -0.0417; uin <- 0.756
+Zvert <- 0.255; lvert <- -0.0653; uvert <- 0.606
 
 emmeans(mixed1, ~ Sex, data=metadata)
 #Sex     emmean lower.HPD upper.HPD
-#both     0.400   0.11828     0.730
-#females  0.233  -0.10962     0.597
-#males    0.293   0.00889     0.607
-Zboth <- 0.400; lboth <- 0.11828; uboth <- 0.730
-Zf <- 0.233; lf <- -0.10962; uf <- 0.597
-Zm <- 0.293; lm <- 0.00889; um <- 0.607
+#both     0.399    0.0959     0.702
+#females  0.234   -0.1100     0.592
+#males    0.298   -0.0258     0.618
+Zboth <- 0.399; lboth <- 0.0959; uboth <- 0.702
+Zf <- 0.234; lf <- -0.1100; uf <- 0.592
+Zm <- 0.298; lm <- -0.0258; um <- 0.618
 
 emmeans(mixed1, ~ Plasticity, data=metadata)
 #Plasticity emmean lower.HPD upper.HPD
-#No          0.275  -0.00413     0.573
-#Plastic     0.347   0.03384     0.670
-Znpl <- 0.275; lnpl <- -0.00413; unpl <- 0.573
-Zpl <- 0.347; lpl <- 0.03384; upl <- 0.670
+#No          0.279  -0.0476     0.575
+#Plastic     0.339   0.0252     0.670
+Znpl <- 0.279; lnpl <- -0.0476; unpl <- 0.575
+Zpl <- 0.339; lpl <- 0.0252; upl <- 0.670
 
 #Fisher Z Plot
 plot(NA,xlim=c(-2,2),ylim=c(-0.9,1.3),axes=F,ann=F)
@@ -570,37 +570,37 @@ axis(1)
 #Fisher Z
 #Carotenoid
 segments(lcar,1.2,ucar,1.2);
-points(Zcar,1.2,pch=16,col = "orange",xpd=NA)
+points(Zcar,1.2,pch=16,col = "black",xpd=NA)
 #Eumelanin
 segments(leu,1,ueu,1);
 points(Zeu,1,pch=16,col = "black",xpd=NA)
 #Pheomelanin
 segments(lph,0.8,uph,0.8);
-points(Zph,0.8,pch=16,col = "orangered3",xpd=NA)
+points(Zph,0.8,pch=16,col = "black",xpd=NA)
 #Unknown
 segments(lun,0.6,uun,0.6);
-points(Zun,0.6,pch=16,col = "darkorchid4",xpd=NA)
+points(Zun,0.6,pch=16,col = "black",xpd=NA)
 #Vertebrates
 segments(lvert,0.4,uvert,0.4);
-points(Zvert,0.4,pch=16,col = "dodgerblue4",xpd=NA)
+points(Zvert,0.4,pch=16,col = "black",xpd=NA)
 #Invertebrates
 segments(lin,0.2,uin,0.2);
-points(Zin,0.2,pch=16,col = "dodgerblue2",xpd=NA)
+points(Zin,0.2,pch=16,col = "black",xpd=NA)
 #Plastic
 segments(lpl,0,upl,0);
-points(Zpl,0,pch=16,col = "darkgreen",xpd=NA)
+points(Zpl,0,pch=16,col = "black",xpd=NA)
 #Non-Plastic
 segments(lnpl,-0.2,unpl,-0.2);
-points(Znpl,-0.2,pch=16,col = "mediumseagreen",xpd=NA)
+points(Znpl,-0.2,pch=16,col = "black",xpd=NA)
 #Sex Both 
 segments(lboth,-0.4,uboth,-0.4);
-points(Zboth,-0.4,pch=16,col = "darkorchid2",xpd=NA)
+points(Zboth,-0.4,pch=16,col = "black",xpd=NA)
 #Females
 segments(lf,-0.6,uf,-0.6);
-points(Zf,-0.6,pch=16,col = "red",xpd=NA)
+points(Zf,-0.6,pch=16,col = "black",xpd=NA)
 #Males
 segments(lm,-0.8,um,-0.8);
-points(Zm,-0.8,pch=16,col = "dodgerblue",xpd=NA)
+points(Zm,-0.8,pch=16,col = "black",xpd=NA)
 
 #Add point for significant values
 
@@ -619,7 +619,7 @@ text(-2.1,0,"Plastic*", cex = 0.9, adj = c(0,0), font = 2)
 text(-2.1,-0.2,"Non-Plastic", cex = 0.9, adj = c(0,0))
 text(-2.1,-0.4,"Both Sexes*", cex = 0.9, adj = c(0,0), font = 2)
 text(-2.1,-0.6,"Females", cex = 0.9, adj = c(0,0))
-text(-2.1,-0.8,"Males*", cex = 0.9, adj = c(0,0), font = 2)
+text(-2.1,-0.8,"Males", cex = 0.9, adj = c(0,0))
 
 #Export 6x6
 #### Fisher Z for each Study #####
