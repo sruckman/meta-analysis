@@ -622,6 +622,65 @@ text(-2.1,-0.6,"Females", cex = 0.9, adj = c(0,0))
 text(-2.1,-0.8,"Males", cex = 0.9, adj = c(0,0))
 
 #Export 6x6
+#### Fisher Z with Publication Bias correction ####
+#Fisher Z Plot
+plot(NA,xlim=c(-2,2),ylim=c(-0.9,1.3),axes=F,ann=F)
+axis(1)
+#Fisher Z
+#Carotenoid
+segments(lcar-0.0652,1.2,ucar-0.0652,1.2);
+points(Zcar-0.0652,1.2,pch=16,col = "black",xpd=NA)
+#Eumelanin
+segments(leu-0.0652,1,ueu-0.0652,1);
+points(Zeu-0.0652,1,pch=16,col = "black",xpd=NA)
+#Pheomelanin
+segments(lph-0.0652,0.8,uph-0.0652,0.8);
+points(Zph-0.0652,0.8,pch=16,col = "black",xpd=NA)
+#Unknown
+segments(lun-0.0652,0.6,uun-0.0652,0.6);
+points(Zun-0.0652,0.6,pch=16,col = "black",xpd=NA)
+#Vertebrates
+segments(lvert-0.0652,0.4,uvert-0.0652,0.4);
+points(Zvert-0.0652,0.4,pch=16,col = "black",xpd=NA)
+#Invertebrates
+segments(lin-0.0652,0.2,uin-0.0652,0.2);
+points(Zin-0.0652,0.2,pch=16,col = "black",xpd=NA)
+#Plastic
+segments(lpl-0.0652,0,upl-0.0652,0);
+points(Zpl-0.0652,0,pch=16,col = "black",xpd=NA)
+#Non-Plastic
+segments(lnpl-0.0652,-0.2,unpl-0.0652,-0.2);
+points(Znpl-0.0652,-0.2,pch=16,col = "black",xpd=NA)
+#Sex Both 
+segments(lboth-0.0652,-0.4,uboth-0.0652,-0.4);
+points(Zboth-0.0652,-0.4,pch=16,col = "black",xpd=NA)
+#Females
+segments(lf-0.0652,-0.6,uf-0.0652,-0.6);
+points(Zf-0.0652,-0.6,pch=16,col = "black",xpd=NA)
+#Males
+segments(lm-0.0652,-0.8,um-0.0652,-0.8);
+points(Zm-0.0652,-0.8,pch=16,col = "black",xpd=NA)
+
+#Add point for significant values
+
+
+#Add dashed line at 0
+abline(v = 0, lty = 1)
+#Add axis labels
+title(xlab = "Fisher Z")
+text(-2.1,1.2,"Carotenoid", cex = 0.9, adj = c(0,0))
+text(-2.1,1,"Eumelanin", cex = 0.9, adj = c(0,0))
+text(-2.1,0.8,"Pheomelanin", cex = 0.9, adj = c(0,0))
+text(-2.1,0.6,"Unknown*", cex = 0.9, adj = c(0,0), font = 2)
+text(-2.1,0.4,"Vertebrates", cex = 0.9, adj = c(0,0))
+text(-2.1,0.2,"Invertebrates", cex = 0.9, adj = c(0,0))
+text(-2.1,0,"Plastic*", cex = 0.9, adj = c(0,0), font = 2)
+text(-2.1,-0.2,"Non-Plastic", cex = 0.9, adj = c(0,0))
+text(-2.1,-0.4,"Both Sexes*", cex = 0.9, adj = c(0,0), font = 2)
+text(-2.1,-0.6,"Females", cex = 0.9, adj = c(0,0))
+text(-2.1,-0.8,"Males", cex = 0.9, adj = c(0,0))
+
+#Export 6x6
 #### Fisher Z for each Study #####
 order <- read.csv("Excel Sheets/species order.csv")
 order <- cbind(order,rep(0,length(order$Study)),rep(0,length(order$Study)))
