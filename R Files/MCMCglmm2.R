@@ -490,9 +490,11 @@ Trim_Fill
 #- DerSimonian-Laird estimator for tau^2
 #- Jackson method for confidence interval of tau^2 and tau
 #- Trim-and-fill method to adjust for funnel plot asymmetry
-cols <- rep(0,length(metadata$Classification))
-for (i in 1:length(metadata$Classification)){
-  if (metadata$Classification[i] == "carotenoid"){
+cols <- rep(0,174)
+for (i in 1:174){
+  if (i >= 150){
+    cols[i] <- "dodgerblue"
+  } else if (metadata$Classification[i] == "carotenoid"){
     cols[i] <- "orange"
   } else if (metadata$Eu_Pheomelanin[i] == "eumelanin"){
     cols[i] <- "black"
@@ -503,9 +505,11 @@ for (i in 1:length(metadata$Classification)){
   } 
 }
 
-shapes <- rep(0,length(metadata$Plasticity))
-for (i in 1:length(metadata$Vert_Invert)){
-  if (metadata$Plasticity[i] == "Plastic"){
+shapes <- rep(0,174)
+for (i in 1:174){
+  if (i >= 150){
+    shapes[i] <- 8
+  } else if (metadata$Plasticity[i] == "Plastic"){
     shapes[i] <- 20
   } else if (metadata$Plasticity[i] == "No"){
     shapes[i] <- 18
@@ -514,16 +518,16 @@ for (i in 1:length(metadata$Vert_Invert)){
 
 FTF_plot <- meta::funnel(Trim_Fill, yaxis="invse", xlim = c(-3,3),
                          xlab = "Fisher Z", ylab = "Weight", 
-                         col = alpha(cols, 0.8), pch = shapes,
+                         col = cols, pch = shapes,
                          level = 0.95, contour = c(0.9, 0.95, 0.99))$col.contour
 #legend
 words <- c("Carotenoid", "Eumelanin", "Pheomelanin", "Unknown", 
-           "Plastic", "Non-Plastic")
+           "Plastic", "Non-Plastic", "Trim and Fill Points")
 Cols <- c("orange","black", "orangered3", "darkorchid4", 
-          "dodgerblue", "dodgerblue")
-points <- c(15,15,15,15,20,18)
-ys <- c(20.1,19.3,18.5,17.7,16.9,16.1)
-for(i in 1:6){
+          "grey50", "grey50", "dodgerblue")
+points <- c(15,15,15,15,20,18,8)
+ys <- c(20.1,19.3,18.5,17.7,16.9,16.1,15.3)
+for(i in 1:7){
   points(x=-2.9, y=ys[i], pch=points[i], col=Cols[i])
   text(x=-2.9,y=ys[i], labels=words[i], pos=4,cex=.75)
 }
