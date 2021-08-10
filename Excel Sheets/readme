@@ -1,4 +1,11 @@
-Key for meta analysis data sheet:
+Excel Sheets:
+list = the species list 
+meta data = the data that we used in the meta-analysis
+meta_complete_data = the data is a copy of meta data with the r, Fisher Z, and SE columns filled in from the R script Effect Size Calculations
+Papers_with_color_and_aggression = all the papers that were downloaded from Web of Science and later pulled data from
+species_order = excel file to create figures by study and phylogeny
+
+Key for meta analysis data sheet(meta data and metafull):
 Study = study name (multiple rows with same name and numbers indicate same study with multiple rows, a/b indicates multiple studies in the same year)
 Species = genus species 
 Color1-Color3 = color polymorphism present from light to dark
