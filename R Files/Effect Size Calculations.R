@@ -4,7 +4,7 @@ setwd("C:\\Users\\sarah\\Documents\\GitHub\\meta-analysis")
 library(DescTools)
 
 #Effect Sizes will be in rho and Fisher Z values
-metadat <- read.csv("Excel Sheets/meta data.csv", header=T)
+metadat <- read.csv("Excel Sheets/meta data2.csv", header=T)
 
 #Add and rename column to hold effect sizes calculations and standard errors
 metadat <- cbind(metadat,rep(0,length(metadat$Study)),rep(0,length(metadat$Study)),
@@ -24,7 +24,7 @@ for (i in 1:length(metadat$Study)){
     metadat$rho[i] <- ((sqrt(p*(1-p)))/dnorm(qnorm(p)))*rpb
   } else if (metadat$Stat.Test[i] == "mean"){
     m <- metadat$n1[i]+metadat$n2[i]-2
-    d <- (metadat$mean1[i] - metadat$mean2[i])/(sqrt(((metadat$n1[i]-1)*metadat$sd1[i]^2)+((metadat$n2[i]-1)*metadat$sd2[i]^2)/(m)))
+    d <- (metadat$mean2[i] - metadat$mean1[i])/(sqrt(((metadat$n1[i]-1)*metadat$sd1[i]^2)+((metadat$n2[i]-1)*metadat$sd2[i]^2)/(m)))
     h <- (m/metadat$n1[i]) + (m/metadat$n2[i])
     rpb <- d/sqrt((d^2)+h)
     p <- metadat$n1[i]/(metadat$n1[i]+metadat$n2[i])
