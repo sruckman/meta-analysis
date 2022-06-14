@@ -8,6 +8,8 @@ library(phytools)
 library(TreeTools)
 library(ggplot2)
 library(emmeans)
+library(bayestestR)
+library(meta)
 
 #### Phylogeny ####
 #First, we need to read in the tree and root it to convert it from an 
@@ -99,6 +101,13 @@ summary(allRnd.Z)
 
 
 plot(allRnd.Z$Sol)
+
+#proportion of samples above 0
+p_significance(allRnd.Z$Sol,threshold = 0)
+#Practical Significance (threshold: 0.00)
+#Parameter   |   ps
+#(Intercept) | 0.99
+
 
 # Proportion of variance explained by random factors
 rand <- allRnd.Z$VCV/apply(allRnd.Z$VCV,1,sum)
@@ -295,125 +304,268 @@ prior.ex2 <- list(G = list(G1 = list(V = 1, nu = 0.02, alpha.mu = 0.4, alpha.V =
                            G3 = list(V = 1, nu = 0.02, alpha.mu = 0.4, alpha.V = 0.5)), 
                   R = list(V=1, nu=0.02))
 
-class.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin, 
+class.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin - 1, 
                      random = ~animal + Authors + us(SE_Z):units, 
                      data=metadata, pedigree = tree,
                      nitt = 600000, thin = 100, burnin = 400000, 
                      prior = prior.ex2)
 class.Z$DIC
-#-232.864
+#-235.6355
 
+#Compare to Random Model:
+teststat <- (as.numeric(allRnd.Z$DIC)-as.numeric(class.Z$DIC))/-2
+p.val <- pchisq(teststat, df = 1, lower.tail = TRUE)
+1-p.val
+#p-value = 0.2486678, Not significantly better
 
 ###### Run the model with Plasticity only ####
 #Run the model
-plasticity.Z <- MCMCglmm(Fisher_Z ~ Plasticity, 
+plasticity.Z <- MCMCglmm(Fisher_Z ~ Plasticity - 1, 
                          random = ~animal + Authors + us(SE_Z):units, 
                          data=metadata, pedigree = tree, 
                          nitt = 600000, thin = 100, burnin = 400000, 
                          prior = prior.ex2)
 plasticity.Z$DIC
-#-236.2064
+#-236.9118
+
+#Compare to Random Model:
+teststat <- (as.numeric(allRnd.Z$DIC)-as.numeric(plasticity.Z$DIC))/-2
+p.val <- pchisq(teststat, df = 1, lower.tail = TRUE)
+1-p.val
+#p-value = 0.4052804, Not significantly better
+
 ###### Run the model with Sex only ####
 #Run the model
-sex.Z <- MCMCglmm(Fisher_Z ~ Sex, 
+sex.Z <- MCMCglmm(Fisher_Z ~ Sex - 1, 
                          random = ~animal + Authors + us(SE_Z):units, 
                          data=metadata, pedigree = tree, 
                          nitt = 600000, thin = 100, burnin = 400000, 
                          prior = prior.ex2)
 sex.Z$DIC
-#-235.5992
+#-237.1848
+
+#Compare to Random Model:
+teststat <- (as.numeric(allRnd.Z$DIC)-as.numeric(sex.Z$DIC))/-2
+p.val <- pchisq(teststat, df = 1, lower.tail = TRUE)
+1-p.val
+#p-value = 0.4558261, Not significantly better
 
 ###### Run the model with Class and Plasticity ####
 #Run the model
-plastic.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Plasticity, 
+plastic.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Plasticity - 1, 
                    random = ~animal + Authors + us(SE_Z):units, 
                    data=metadata, pedigree = tree, 
                    nitt = 600000, thin = 100, burnin = 400000, 
                    prior = prior.ex2)
 plastic.Z$DIC
-#-234.9329
+#-234.8729
+
+#Compare to Random Model:
+teststat <- (as.numeric(allRnd.Z$DIC)-as.numeric(plastic.Z$DIC))/-2
+p.val <- pchisq(teststat, df = 1, lower.tail = TRUE)
+1-p.val
+#p-value = 0.1907189, Not significantly better
+
+#Compare to Class Only Model:
+teststat <- (as.numeric(class.Z$DIC)-as.numeric(plastic.Z$DIC))/-2
+p.val <- pchisq(teststat, df = 1, lower.tail = TRUE)
+1-p.val
+#p-value = 0.5369173, Not significantly better
+
+#Compare to Plasticity Only Model:
+teststat <- (as.numeric(plasticity.Z$DIC)-as.numeric(plastic.Z$DIC))/-2
+p.val <- pchisq(teststat, df = 1, lower.tail = TRUE)
+1-p.val
+#p-value = 0.3126489, Not significantly better
 
 ###### Run the model with Plasticity and Sex ####
 #Run the model
-ps.Z <- MCMCglmm(Fisher_Z ~ Plasticity + Sex, 
+ps.Z <- MCMCglmm(Fisher_Z ~ Plasticity + Sex - 1, 
                        random = ~animal + Authors + us(SE_Z):units, 
                        data=metadata, pedigree = tree, 
                        nitt = 600000, thin = 100, burnin = 400000, 
                        prior = prior.ex2)
 ps.Z$DIC
-#-236.1622
+#-238.3838
+
+#Compare to Random Model:
+teststat <- (as.numeric(allRnd.Z$DIC)-as.numeric(ps.Z$DIC))/-2
+p.val <- pchisq(teststat, df = 1, lower.tail = TRUE)
+1-p.val
+#p-value = 1, Not significantly better
+
+#Compare to Class Only Model:
+teststat <- (as.numeric(sex.Z$DIC)-as.numeric(ps.Z$DIC))/-2
+p.val <- pchisq(teststat, df = 1, lower.tail = TRUE)
+1-p.val
+#p-value = 1, Not significantly better
+
+#Compare to Plasticity Only Model:
+teststat <- (as.numeric(plasticity.Z$DIC)-as.numeric(ps.Z$DIC))/-2
+p.val <- pchisq(teststat, df = 1, lower.tail = TRUE)
+1-p.val
+#p-value = 1, Not significantly better
+
+###### Run the model with Class and Sex ####
+#Run the model
+cs.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Sex - 1, 
+                 random = ~animal + Authors + us(SE_Z):units, 
+                 data=metadata, pedigree = tree, 
+                 nitt = 600000, thin = 100, burnin = 400000, 
+                 prior = prior.ex2)
+cs.Z$DIC
+#-234.2826
+
+#Compare to Random Model:
+teststat <- (as.numeric(allRnd.Z$DIC)-as.numeric(cs.Z$DIC))/-2
+p.val <- pchisq(teststat, df = 1, lower.tail = TRUE)
+1-p.val
+#p-value = 0.1565517, Not significantly better
+
+#Compare to Class Only Model:
+teststat <- (as.numeric(class.Z$DIC)-as.numeric(cs.Z$DIC))/-2
+p.val <- pchisq(teststat, df = 1, lower.tail = TRUE)
+1-p.val
+#p-value = 0.4108119, Not significantly better
+
+#Compare to Sex Only Model:
+teststat <- (as.numeric(sex.Z$DIC)-as.numeric(cs.Z$DIC))/-2
+p.val <- pchisq(teststat, df = 1, lower.tail = TRUE)
+1-p.val
+#p-value = 0.2283518, Not significantly better
 
 ###### Run the model with Class, Plasticity, and Sex ####
 #Run the model
-cps.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Sex + Plasticity, 
+cps.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Sex + Plasticity - 1, 
                  random = ~animal + Authors + us(SE_Z):units, 
                  data=metadata, pedigree = tree, 
                  nitt = 600000, thin = 100, burnin = 400000, 
                  prior = prior.ex2)
 cps.Z$DIC
-#-234.3073
+#-234.0214
+
+#Compare to Random Model:
+teststat <- (as.numeric(allRnd.Z$DIC)-as.numeric(cps.Z$DIC))/-2
+p.val <- pchisq(teststat, df = 1, lower.tail = TRUE)
+1-p.val
+#p-value = 0.1437089, Not significantly better
+
+#Compare to Class and Plastic Model:
+teststat <- (as.numeric(plastic.Z$DIC)-as.numeric(cps.Z$DIC))/-2
+p.val <- pchisq(teststat, df = 1, lower.tail = TRUE)
+1-p.val
+#p-value = 0.5140902, Not significantly better
+
+#Compare to Plasticity and Sex Model:
+teststat <- (as.numeric(ps.Z$DIC)-as.numeric(cps.Z$DIC))/-2
+p.val <- pchisq(teststat, df = 1, lower.tail = TRUE)
+1-p.val
+#p-value = 0.1397066, Not significantly better
+
+#Compare to Class and Sex Model:
+teststat <- (as.numeric(cs.Z$DIC)-as.numeric(cps.Z$DIC))/-2
+p.val <- pchisq(teststat, df = 1, lower.tail = TRUE)
+1-p.val
+#p-value = 0.7178457, Not significantly better
 
 ###### Run the model add Vert/Invert ####
 #Run the model
-vert.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Sex + Plasticity + Vert_Invert, 
+vert.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Sex + Plasticity + Vert_Invert -1, 
                   random = ~animal + Authors + us(SE_Z):units, 
                   data=metadata, pedigree = tree, 
                   nitt = 600000, thin = 100, burnin = 400000, 
                   prior = prior.ex2)
 vert.Z$DIC
-#-232.8356
+#-233.4535
+
+#Compare to Class, Plasticity, and Sex Model:
+teststat <- (as.numeric(cps.Z$DIC)-as.numeric(vert.Z$DIC))/-2
+p.val <- pchisq(teststat, df = 1, lower.tail = TRUE)
+1-p.val
+#p-value = 0.5941223, Not significantly better
 
 ###### Run the model add Location - Vert/Invert ####
 #Run the model
-loc.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Sex + Plasticity + Location, 
+loc.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Sex + Plasticity + Location -1, 
                    random = ~animal + Authors + us(SE_Z):units, 
                    data=metadata, pedigree = tree, 
                    nitt = 600000, thin = 100, burnin = 400000, 
                    prior = prior.ex2)
 loc.Z$DIC
-#-234.5349
+#-234.7651
+
+#Compare to Class, Plasticity, and Sex Model:
+teststat <- (as.numeric(cps.Z$DIC)-as.numeric(loc.Z$DIC))/-2
+p.val <- pchisq(teststat, df = 1, lower.tail = TRUE)
+1-p.val
+#p-value = 1, Not significantly better
 
 ###### Run the model with Season not Plasticity ####
 #Run the model
-sea.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Sex + Season, 
+sea.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Sex + Season - 1, 
                   random = ~animal + Authors + us(SE_Z):units, 
                   data=metadata, pedigree = tree, 
                   nitt = 600000, thin = 100, burnin = 400000, 
                   prior = prior.ex2)
 sea.Z$DIC
-#-227.3099
+#-225.1154
+
+#Compare to Class and Sex Model:
+teststat <- (as.numeric(cs.Z$DIC)-as.numeric(sea.Z$DIC))/-2
+p.val <- pchisq(teststat, df = 1, lower.tail = TRUE)
+1-p.val
+#p-value = 0.03227908, Significantly worse
 
 ###### Mixed Effects Model with Plasticity x Sex ####
 #Run the model
-pxs.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Sex + Plasticity + Sex*Plasticity, 
+pxs.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Sex + Plasticity 
+                  + Sex*Plasticity - 1, 
                 random = ~animal + Authors + us(SE_Z):units, 
                 data=metadata, pedigree = tree, 
                 nitt = 600000, thin = 100, burnin = 400000, 
                 prior = prior.ex2)
 pxs.Z$DIC
-#-232.3878
+#-232.2638
+
+#Compare to Class, Plasticity, and Sex Model:
+teststat <- (as.numeric(cps.Z$DIC)-as.numeric(pxs.Z$DIC))/-2
+p.val <- pchisq(teststat, df = 1, lower.tail = TRUE)
+1-p.val
+#p-value = 0.3485277, Not significantly better
 
 ###### Mixed Effects Model with Eu_Pheomelanin x Plasticity ####
 #Run the model
 ebyp.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Sex + Plasticity 
-                   + Eu_Pheomelanin*Plasticity, 
+                   + Eu_Pheomelanin*Plasticity - 1, 
                  random = ~animal + Authors + us(SE_Z):units, 
                  data=metadata, pedigree = tree, 
                  nitt = 600000, thin = 100, burnin = 400000, 
                  prior = prior.ex2)
 ebyp.Z$DIC
-#-225.5151
+#-225.5206
+
+#Compare to Class, Plasticity, and Sex Model:
+teststat <- (as.numeric(cps.Z$DIC)-as.numeric(ebyp.Z$DIC))/-2
+p.val <- pchisq(teststat, df = 1, lower.tail = TRUE)
+1-p.val
+#p-value = 0.03924045, Significantly worse than cps model
 
 ###### Mixed Effects Model with Eu_Pheomelanin x Sex ####
 #Run the model
 ebys.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Sex + Plasticity
-                 + Sex*Eu_Pheomelanin, 
+                 + Sex*Eu_Pheomelanin - 1, 
                  random = ~animal + Authors + us(SE_Z):units, 
                  data=metadata, pedigree = tree, 
                  nitt = 600000, thin = 100, burnin = 400000, 
                  prior = prior.ex2)
 ebys.Z$DIC
-#-229.806
+#-230.5733
+
+#Compare to Class, Plasticity, and Sex Model:
+teststat <- (as.numeric(cps.Z$DIC)-as.numeric(ebys.Z$DIC))/-2
+p.val <- pchisq(teststat, df = 1, lower.tail = TRUE)
+1-p.val
+#p-value = 0.1891704, Not significantly better
 
 ################## "BEST" MODEL (class and plasticity) ##############
 load("R Files/mixed_Z.RDATA")
@@ -425,7 +577,7 @@ prior.ex2<- list(G = list(G1 = list(V = 1, nu = 1, alpha.mu = 0.4, alpha.V = 0.5
                  R = list(V=1, nu=0.02))
 
 #Run the model
-mixed.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Plasticity, 
+mixed.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Plasticity - 1, 
                    random = ~animal + Authors + us(SE_Z):units, 
                    data=metadata, pedigree = tree, 
                    nitt = 800000, thin = 100, burnin = 600000, 
@@ -438,7 +590,17 @@ summary(mixed.Z)
 #Thinning interval  = 100
 #Sample size  = 2000 
 
-#DIC: -236.0936 
+#DIC: -234.0923 
+
+#Location effects: Fisher_Z ~ Eu_Pheomelanin + Plasticity - 1 
+#                           post.mean l-95% CI u-95% CI eff.samp pMCMC  
+#Eu_Pheomelanincarotenoid    0.15742 -0.18712  0.53343     2000 0.323  
+#Eu_Pheomelanineumelanin     0.34961  0.03481  0.71041     2154 0.043 *
+#Eu_Pheomelaninpheomelanin   0.22786 -0.17709  0.66700     2000 0.238  
+#Eu_Pheomelaninstructural    0.34005 -0.08905  0.81139     1766 0.127  
+#Eu_Pheomelaninunknown       0.41805 -0.03605  0.84654     2000 0.074 .
+#PlasticityPlastic          -0.01255 -0.26089  0.22384     2000 0.940  
+#Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
 #Model diagnostics
 plot(mixed.Z$Sol)
@@ -464,7 +626,7 @@ apply(rand,2,function(c) quantile(c,probs = c(0.025,0.5,0.975)))
 Rand_Var <- apply(rand,2,mean)
 Rand_Var
 #     animal         Authors         SE_Z:SE_Z.units   units 
-#0.013542132     0.024002803     0.960664483     0.001790582
+#0.015918122     0.023260701     0.958985695     0.001835482
 
 #varA = phylogenetic level variance
 varA <- Rand_Var[1] 
@@ -485,19 +647,19 @@ varT = varA + varS + varE + varM
 I2s <- varS/varT
 I2s*100
 #  Authors 
-#  2.40028
+#  2.32607
 
 ## species level heterogenity I^2s = varA/varT
 I2u <- varA/varT
 I2u*100
 # animal 
-# 1.354213 
+# 1.591812 
 
 ## phylogenetic heritability, phylogenetic signal H2 = varA/varA + varS + varE
 H2 = varA/(varA + varS + varE)
 H2
 # animal 
-# 0.3442724
+#0.3881115
 
 # Proportion of variance explained by random factors
 Sol <- mixed.Z$Sol/apply(mixed.Z$Sol,1,sum)
@@ -509,14 +671,14 @@ pred_matrix <- predict(mixed.Z, interval = "prediction")
 pred_interval <- apply(pred_matrix, 2, mean)
 pred_interval
 #      fit        lwr        upr 
-#0.2722724 -0.8246438  1.3688914
+#0.2681985 -0.8466088  1.3802318
 
 #### Get the posterior mean and 95% CI of the overall effect size ####
 pred_matrix <- predict(mixed.Z, interval = "confidence")
 confidence <- apply(pred_matrix, 2, mean)
 confidence
 #      fit        lwr        upr 
-#0.26483759 -0.08914424  0.65061793 
+#0.2662392 -0.1043692  0.6625217 
 
 #### publication bias ####
 # getting predictions (raw data - predictions = meta-analytic residuals)
@@ -533,45 +695,46 @@ summary(Egger)
 #glm(formula = zMR ~ Precision, family = "gaussian", data = metadata)
 
 #Deviance Residuals: 
-#  Min        1Q    Median        3Q       Max  
-#-5.883  -1.368  -0.251   1.182  13.123   
+#  Min        1Q    Median      3Q       Max  
+#-5.8672  -1.3691  -0.2501   1.1773  13.1018    
 
 #Coefficients:
 #             Estimate Std. Error t value Pr(>|t|)  
-#(Intercept)  0.55461    0.36999   1.499   0.1360  
-#Precision   -0.07877    0.04405  -1.788   0.0758 .
+#(Intercept)  0.55101    0.37024   1.488    0.139  
+#Precision   -0.07960    0.04408  -1.806    0.073 .
 #  ---
 #  Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
 #(Dispersion parameter for gaussian family taken to be 5.671266)
 
-#Null deviance: 866.53  on 148  degrees of freedom
-#Residual deviance: 848.08  on 147  degrees of freedom
-#AIC: 687.96
+#Null deviance: 868.11  on 148  degrees of freedom
+#Residual deviance: 849.27  on 147  degrees of freedom
+#AIC: 688.17
 
 #Number of Fisher Scoring iterations: 2
 
-Trim_Fill <- meta::trimfill(MR, metadata$SE_Z)
+Trim_Fill <- trimfill(MR, metadata$SE_Z)
 Trim_Fill
 
 #Number of studies combined: k = 149 (with 0 added studies)
 
 #                                         95%-CI     z  p-value
-#Random effects model     0.0114 [-0.0398; 0.0626] 0.44  0.6629
+#Random effects model     0.0100 [-0.0413; 0.0613] 0.38  0.7018
 
 #Quantifying heterogeneity:
-#tau^2 = 0.0693 [0.1141; 0.2063]; tau = 0.2632 [0.3378; 0.4542]
+#tau^2 = 0.0694 [0.1142; 0.2065]; tau = 0.2634 [0.3380; 0.4544]
 #I^2 = 82.8% [80.2%; 85.1%]; H = 2.41 [2.25; 2.59]
 
 #Test of heterogeneity:
-#      Q  d.f. p-value
-#861.05  148 < 0.0001
+#     Q  d.f. p-value
+#862.07  148 < 0.0001
 
 #Details on meta-analytical method:
 #- Inverse variance method
 #- DerSimonian-Laird estimator for tau^2
 #- Jackson method for confidence interval of tau^2 and tau
 #- Trim-and-fill method to adjust for funnel plot asymmetry
+
 cols <- rep(0,150)
 for (i in 1:150){
   if (i > 150){
@@ -623,25 +786,39 @@ for(i in 1:8){
 
 
 #### Medians and 95% Credible Intervals ####
-emmeans(mixed.Z, ~ Eu_Pheomelanin, data=metadata)
+emmeans(mixed.Z, ~ Eu_Pheomelanin, data=metadata, level = 0.95)
 #Eu_Pheomelanin emmean lower.HPD upper.HPD
-#carotenoid      0.150   -0.1822     0.445
-#eumelanin       0.336   -0.0166     0.665
-#pheomelanin     0.214   -0.1902     0.642
-#structural      0.330   -0.1826     0.779
-#unknown         0.427   -0.0895     0.793
-Zcar <- 0.150; lcar <- -0.1822; ucar <- 0.445
-Zeu <- 0.336;  leu <-  -0.0166; ueu <- 0.665
-Zph <- 0.214;  lph <-  -0.1902; uph <- 0.642
-Zst <- 0.330;  lst <-  -0.1826; ust <- 0.779
-Zun <- 0.427;  lun <-  -0.0895; uun <- 0.793
+#carotenoid      0.151  -0.16446     0.512
+#eumelanin       0.336  -0.00644     0.701
+#pheomelanin     0.216  -0.19159     0.684
+#structural      0.330  -0.12731     0.799
+#unknown         0.417  -0.07124     0.820
+#Point estimate displayed: median 
+#HPD interval probability: 0.95
+Zcar <- 0.151; lcar <- -0.1645; ucar <- 0.512
+Zeu <- 0.336;  leu <-  -0.0064; ueu <- 0.701
+Zph <- 0.216;  lph <-  -0.1916; uph <- 0.684
+Zst <- 0.330;  lst <-  -0.1273; ust <- 0.799
+Zun <- 0.417;  lun <-  -0.0712; uun <- 0.820
 
-emmeans(mixed.Z, ~ Plasticity, data=metadata)
+#Probability above 0
+p_significance(mixed.Z$Sol, threshold = 0)
+#Parameter                 |   ps
+#Eu_Pheomelanincarotenoid  | 0.84
+#Eu_Pheomelanineumelanin   | 0.98
+#Eu_Pheomelaninpheomelanin | 0.88
+#Eu_Pheomelaninstructural  | 0.94
+#Eu_Pheomelaninunknown     | 0.96
+#PlasticityPlastic         | 0.53
+
+
+
+emmeans(mixed.Z, ~ Plasticity, data=metadata, level = 0.95)
 #Plasticity emmean lower.HPD upper.HPD
-#No          0.293  -0.00502     0.587
-#Plastic     0.283  -0.05476     0.655
-Znpl <- 0.293; lnpl <- -0.00502; unpl <- 0.587
-Zpl <- 0.283;  lpl <- -0.05476;  upl <- 0.655
+#No          0.291   -0.0320     0.604
+#Plastic     0.284   -0.0631     0.674
+Znpl <- 0.291; lnpl <- -0.0320; unpl <- 0.604
+Zpl <- 0.284;  lpl <- -0.0631;  upl <- 0.674
 
 #Fisher Z Plot
 plot(NA,xlim=c(-2,2),ylim=c(0.3,1.8),axes=F,ann=F)
@@ -688,26 +865,26 @@ plot(NA,xlim=c(-2,2),ylim=c(0.3,1.8),axes=F,ann=F)
 axis(1)
 #Fisher Z
 #Carotenoid
-segments(lcar-0.0114,1.6,ucar-0.0114,1.6);
-points(Zcar-0.0114,1.6,pch=16,col = "black",xpd=NA)
+segments(lcar+0.01,1.6,ucar+0.01,1.6);
+points(Zcar+0.01,1.6,pch=16,col = "black",xpd=NA)
 #Eumelanin
-segments(leu-0.0114,1.4,ueu-0.0114,1.4);
-points(Zeu-0.0114,1.4,pch=16,col = "black",xpd=NA)
+segments(leu+0.01,1.4,ueu+0.01,1.4);
+points(Zeu+0.01,1.4,pch=16,col = "black",xpd=NA)
 #Pheomelanin
-segments(lph-0.0114,1.2,uph-0.0114,1.2);
-points(Zph-0.0114,1.2,pch=16,col = "black",xpd=NA)
+segments(lph+0.01,1.2,uph+0.01,1.2);
+points(Zph+0.01,1.2,pch=16,col = "black",xpd=NA)
 #Structural 
-segments(lst-0.0114,1,ust-0.0114,1);
-points(Zst-0.0114,1,pch=16,col = "black",xpd=NA)
+segments(lst+0.01,1,ust+0.01,1);
+points(Zst+0.01,1,pch=16,col = "black",xpd=NA)
 #Unknown
-segments(lun-0.0114,0.8,uun-0.0114,0.8);
-points(Zun-0.0114,0.8,pch=16,col = "black",xpd=NA)
+segments(lun+0.01,0.8,uun+0.01,0.8);
+points(Zun+0.01,0.8,pch=16,col = "black",xpd=NA)
 #Plastic
-segments(lpl-0.0114,0.6,upl-0.0114,0.6);
-points(Zpl-0.0114,0.6,pch=16,col = "black",xpd=NA)
+segments(lpl+0.01,0.6,upl+0.01,0.6);
+points(Zpl+0.01,0.6,pch=16,col = "black",xpd=NA)
 #Non-Plastic
-segments(lnpl-0.0114,0.4,unpl-0.0114,0.4);
-points(Znpl-0.0114,0.4,pch=16,col = "black",xpd=NA)
+segments(lnpl+0.01,0.4,unpl+0.01,0.4);
+points(Znpl+0.01,0.4,pch=16,col = "black",xpd=NA)
 
 #Add dashed line at 0
 abline(v = 0, lty = 1)
@@ -732,7 +909,7 @@ prior.ex2<- list(G = list(G1 = list(V = 1, nu = 1, alpha.mu = 0.4, alpha.V = 0.5
                  R = list(V=1, nu=0.02))
 
 #Run the model
-mixed1.Z <- MCMCglmm(Fisher_Z ~ Sex + Plasticity, 
+mixed1.Z <- MCMCglmm(Fisher_Z ~ Sex + Plasticity - 1, 
                     random = ~animal + Authors + us(SE_Z):units, 
                     data=metadata, pedigree = tree, 
                     nitt = 800000, thin = 100, burnin = 600000, 
@@ -745,15 +922,15 @@ summary(mixed1.Z)
 #Thinning interval  = 100
 #Sample size  = 2000 
 
-#DIC: -237.5603 
+#DIC: -236.0665 
 
 #Location effects: Fisher_Z ~ Sex + Plasticity 
 
 #                  post.mean  l-95% CI  u-95% CI eff.samp pMCMC  
-#(Intercept)        0.348110 -0.003098  0.702629     1827 0.054 .
-#Sexfemales        -0.068462 -0.367883  0.220553     1848 0.642  
-#Sexmales          -0.064830 -0.323985  0.197611     1951 0.614  
-#PlasticityPlastic -0.098493 -0.322338  0.121182     1988 0.351  
+#Sexboth            0.337465 -0.008471  0.692250     2209 0.053 .
+#Sexfemales         0.275037 -0.060811  0.641119     2100 0.089 .
+#Sexmales           0.281392 -0.012476  0.599365     2180 0.061 .
+#PlasticityPlastic -0.091031 -0.304225  0.122307     1876 0.424  
 
 #  Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
@@ -781,7 +958,7 @@ apply(rand,2,function(c) quantile(c,probs = c(0.025,0.5,0.975)))
 Rand_Var <- apply(rand,2,mean)
 Rand_Var
 #     animal         Authors         SE_Z:SE_Z.units   units 
-#0.013827670     0.024400553     0.960017725     0.001754052
+#0.013716100     0.025128789     0.959374242     0.001780869
 
 #varA = phylogenetic level variance
 varA <- Rand_Var[1] 
@@ -802,19 +979,19 @@ varT = varA + varS + varE + varM
 I2s <- varS/varT
 I2s*100
 #  Authors 
-#  2.440055
+#  2.512879
 
 ## species level heterogenity I^2s = varA/varT
 I2u <- varA/varT
 I2u*100
 # animal 
-# 1.382767 
+# 1.37161 
 
 ## phylogenetic heritability, phylogenetic signal H2 = varA/varA + varS + varE
 H2 = varA/(varA + varS + varE)
 H2
 # animal 
-# 0.345845
+# 0.3376208
 
 # Proportion of variance explained by random factors
 Sol <- mixed1.Z$Sol/apply(mixed1.Z$Sol,1,sum)
@@ -826,14 +1003,14 @@ pred_matrix <- predict(mixed1.Z, interval = "prediction")
 pred_interval <- apply(pred_matrix, 2, mean)
 pred_interval
 #      fit        lwr        upr 
-#0.2654294 -0.8236116  1.3569944
+#0.2682486 -0.8267097  1.3604641
 
 #### Get the posterior mean and 95% CI of the overall effect size ####
 pred_matrix <- predict(mixed1.Z, interval = "confidence")
 confidence <- apply(pred_matrix, 2, mean)
 confidence
 #      fit        lwr        upr 
-#0.26610438 -0.05947403  0.61122696 
+#0.26399349 -0.06253622  0.59979836 
 
 #### publication bias ####
 # getting predictions (raw data - predictions = meta-analytic residuals)
@@ -850,45 +1027,46 @@ summary(Egger)
 #glm(formula = zMR ~ Precision, family = "gaussian", data = metadata)
 
 #Deviance Residuals: 
-#  Min        1Q    Median        3Q       Max  
-#-6.0571  -1.3766  -0.3293   1.0259  13.4956
+#  Min        1Q    Median       3Q      Max  
+#-6.1078  -1.3492  -0.2740   0.9869  13.5119
 
 #Coefficients:
 #             Estimate Std. Error t value Pr(>|t|)  
-#(Intercept)   1.25843    0.37957   3.315  0.00115 **  
-#Precision   -0.20134    0.04519  -4.455 1.65e-05 ***
+#(Intercept)   1.21735    0.37983   3.205  0.00166 **  
+#Precision    -0.19242    0.04522  -4.255 3.71e-05 ***
 #  ---
 #  Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
 #(Dispersion parameter for gaussian family taken to be 5.671266)
 
-#Null deviance: 1013.11  on 148  degrees of freedom
-#Residual deviance: 892.59  on 147  degrees of freedom
-#AIC: 695.58
+#Null deviance: 1003.9  on 148  degrees of freedom
+#Residual deviance: 893.8  on 147  degrees of freedom
+#AIC: 695.78
 
 #Number of Fisher Scoring iterations: 2
 
-Trim_Fill <- meta::trimfill(MR, metadata$SE_Z)
+Trim_Fill <- trimfill(MR, metadata$SE_Z)
 Trim_Fill
 
-#Number of studies combined: k = 162 (with 13 added studies)
+#Number of studies combined: k = 161 (with 12 added studies)
 
 #                                         95%-CI     z  p-value
-#Random effects model     -0.0939 [-0.1573; -0.0304] -2.90  0.0037
+#Random effects model -0.0857 [-0.1489; -0.0224] -2.66  0.0079
 
 #Quantifying heterogeneity:
-#tau^2 = 0.1311 [0.2286; 0.3946]; tau = 0.3621 [0.4782; 0.6281]
-#I^2 = 89.5% [88.2%; 90.7%]; H = 3.09 [2.91; 3.28]
+#tau^2 = 0.1291 [0.2261; 0.3910]; tau = 0.3593 [0.4755; 0.6253]
+#I^2 = 89.4% [88.1%; 90.6%]; H = 3.08 [2.90; 3.26]
 
 #Test of heterogeneity:
 #      Q  d.f. p-value
-#1538.94  161 < 0.0001
+#1513.07  160 < 0.0001
 
 #Details on meta-analytical method:
 #- Inverse variance method
 #- DerSimonian-Laird estimator for tau^2
 #- Jackson method for confidence interval of tau^2 and tau
 #- Trim-and-fill method to adjust for funnel plot asymmetry
+
 cols <- rep(0,162)
 for (i in 1:162){
   if (i > 150){
@@ -936,26 +1114,34 @@ for(i in 1:9){
   points(x=-2.9, y=ys[i], pch=points[i], col=Cols[i])
   text(x=-2.9,y=ys[i], labels=words[i], pos=4,cex=.75)
 }
-#Export 6x6
+#Export 6x7
 
 
 #### Medians and 95% Credible Intervals ####
-emmeans(mixed1.Z, ~ Sex, data=metadata)
+emmeans(mixed1.Z, ~ Sex, data=metadata, level = 0.95)
 #Sex     emmean lower.HPD upper.HPD
-#both     0.299   -0.0653     0.614
-#females  0.225   -0.1078     0.562
-#males    0.237   -0.0583     0.565
-Zb <-  0.299;  lb <- -0.0653; ub <- 0.614
-Zf <-  0.225;  lf <- -0.1078; uf <- 0.562
-Zm <-  0.237;  lm <- -0.0583; um <- 0.565
+#both     0.293   -0.0256     0.640
+#females  0.227   -0.1135     0.571
+#males    0.237   -0.0555     0.556
+Zb <-  0.293;  lb <- -0.0256; ub <- 0.640
+Zf <-  0.227;  lf <- -0.1135; uf <- 0.571
+Zm <-  0.237;  lm <- -0.0555; um <- 0.556
 
 
-emmeans(mixed1.Z, ~ Plasticity, data=metadata)
+emmeans(mixed1.Z, ~ Plasticity, data=metadata, level = 0.95)
 #Plasticity emmean lower.HPD upper.HPD
-#No          0.300    0.0336      0.64
-#Plastic     0.205   -0.1061      0.56
-Znpl <- 0.30; lnpl <-  0.0336; unpl <- 0.64
-Zpl <- 0.205;  lpl <- -0.1061;  upl <- 0.56
+#No          0.291   -0.0130     0.584
+#Plastic     0.211   -0.0993     0.528
+Znpl <- 0.291; lnpl <-  -0.0130; unpl <- 0.584
+Zpl <- 0.211;  lpl <- -0.0993;  upl <- 0.528
+
+p_significance(mixed1.Z$Sol, threshold = 0)
+#Parameter         |   ps
+#Sexboth           | 0.97
+#Sexfemales        | 0.96
+#Sexmales          | 0.97
+#PlasticityPlastic | 0.79
+
 
 #Fisher Z Plot
 plot(NA,xlim=c(-2,2),ylim=c(0.7,1.8),axes=F,ann=F)
@@ -985,7 +1171,7 @@ text(-2.1,1.6,"Females", cex = 0.9, adj = c(0,0))
 text(-2.1,1.4,"Males", cex = 0.9, adj = c(0,0))
 text(-2.1,1.2,"Both Sexes", cex = 0.9, adj = c(0,0))
 text(-2.1,1,"Plastic", cex = 0.9, adj = c(0,0))
-text(-2.1,0.8,"Non-Plastic*", cex = 0.9, adj = c(0,0))
+text(-2.1,0.8,"Non-Plastic", cex = 0.9, adj = c(0,0))
 
 #Export 6x6
 #### Fisher Z with Publication Bias correction ####
@@ -994,20 +1180,20 @@ plot(NA,xlim=c(-2,2),ylim=c(0.7,1.8),axes=F,ann=F)
 axis(1)
 #Fisher Z
 #Female
-segments(lf-0.0939,1.6,uf-0.0939,1.6);
-points(Zf-0.0939,1.6,pch=16,col = "black",xpd=NA)
+segments(lf-0.0857,1.6,uf-0.0857,1.6);
+points(Zf-0.0857,1.6,pch=16,col = "black",xpd=NA)
 #Male
-segments(lm-0.0939,1.4,um-0.0939,1.4);
-points(Zm-0.0939,1.4,pch=16,col = "black",xpd=NA)
+segments(lm-0.0857,1.4,um-0.0857,1.4);
+points(Zm-0.0857,1.4,pch=16,col = "black",xpd=NA)
 #Both
-segments(lb-0.0939,1.2,ub-0.0939,1.2);
-points(Zb-0.0939,1.2,pch=16,col = "black",xpd=NA)
+segments(lb-0.0857,1.2,ub-0.0857,1.2);
+points(Zb-0.0857,1.2,pch=16,col = "black",xpd=NA)
 #Plastic
-segments(lpl-0.0939,1,upl-0.0939,1);
-points(Zpl-0.0939,1,pch=16,col = "black",xpd=NA)
+segments(lpl-0.0857,1,upl-0.0857,1);
+points(Zpl-0.0857,1,pch=16,col = "black",xpd=NA)
 #Non-Plastic
-segments(lnpl-0.0939,0.8,unpl-0.0939,0.8);
-points(Znpl-0.0939,0.8,pch=16,col = "black",xpd=NA)
+segments(lnpl-0.0857,0.8,unpl-0.0857,0.8);
+points(Znpl-0.0857,0.8,pch=16,col = "black",xpd=NA)
 
 #Add dashed line at 0
 abline(v = 0, lty = 1)
