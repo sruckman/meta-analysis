@@ -216,6 +216,7 @@ Trim_Fill
 #- DerSimonian-Laird estimator for tau^2
 #- Jackson method for confidence interval of tau^2 and tau
 #- Trim-and-fill method to adjust for funnel plot asymmetry
+
 cols <- rep(0,154)
 for (i in 1:154){
   if (i > 149){
@@ -342,7 +343,7 @@ sex.Z <- MCMCglmm(Fisher_Z ~ Sex - 1,
                          nitt = 600000, thin = 100, burnin = 400000, 
                          prior = prior.ex2)
 sex.Z$DIC
-#-237.1848
+#-234.0178
 
 #Compare to Random Model:
 teststat <- (as.numeric(allRnd.Z$DIC)-as.numeric(sex.Z$DIC))/-2
@@ -567,8 +568,633 @@ p.val <- pchisq(teststat, df = 1, lower.tail = TRUE)
 1-p.val
 #p-value = 0.1891704, Not significantly better
 
+################## "BEST" MODEL (pigment class) ##############
+load("R Files/class_Z.RDATA")
+
+#prior with expanded parameters (Cuachy Distribution close to a Fisher Z)
+prior.ex2<- list(G = list(G1 = list(V = 1, nu = 1, alpha.mu = 0.4, alpha.V = 0.5), 
+                          G2 = list(V = 1, nu = 1, alpha.mu = 0.4, alpha.V = 0.5), 
+                          G3 = list(V = 1, nu = 1, alpha.mu = 0.4, alpha.V = 0.5)), 
+                 R = list(V=1, nu=0.02))
+
+#Run the model
+color.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin - 1, 
+                    random = ~animal + Authors + us(SE_Z):units, 
+                    data=metadata, pedigree = tree, 
+                    nitt = 800000, thin = 100, burnin = 600000, 
+                    prior = prior.ex2)
+#Save the model for later
+#save(color.Z, file = "class_Z.RDATA")
+
+summary(color.Z)
+#Iterations = 600001:799901
+#Thinning interval  = 100
+#Sample size  = 2000 
+
+#DIC: -235.5001 
+
+#Location effects: Fisher_Z ~ Eu_Pheomelanin - 1 
+#                           post.mean l-95% CI u-95% CI eff.samp pMCMC  
+#Eu_Pheomelanincarotenoid    0.15592 -0.16729  0.46140     1852 0.230  
+#Eu_Pheomelanineumelanin     0.35431  0.03791  0.67451     1868 0.025 *
+#Eu_Pheomelaninpheomelanin   0.23285 -0.15794  0.63321     2000 0.213  
+#Eu_Pheomelaninstructural    0.34697 -0.12401  0.78356     2000 0.117  
+#Eu_Pheomelaninunknown       0.42038 -0.02170  0.82486     2000 0.061 . 
+#Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+#Model diagnostics
+plot(color.Z$Sol)
+autocorr(color.Z$Sol)
+autocorr(color.Z$VCV)
+
+xsim <- simulate(color.Z)
+
+model_test <- data.frame(metadata$Fisher_Z, metadata$Weight, xsim)
+colnames(model_test) <- c("Fisher_Z", "invSE", "sim")
+ggplot() +
+  geom_point(data=model_test, aes(x=Fisher_Z, y=invSE)) +
+  geom_point(data=model_test, aes(x=sim, y=invSE), color="red")
+
+# Proportion of variance explained by random factors
+rand <- color.Z$VCV/apply(color.Z$VCV,1,sum)
+# Get median values (50%) and 95% quantiles
+apply(rand,2,function(c) quantile(c,probs = c(0.025,0.5,0.975)))
+
+#### calculate I^2 to quantify heterogeneity ####
+## As per Nakagawa & Santos 2012, calculate the different random effect-level I^2's
+# Get the mean value of the variance for all the random effects
+Rand_Var <- apply(rand,2,mean)
+Rand_Var
+#     animal         Authors         SE_Z:SE_Z.units   units 
+#0.014014653     0.022476969     0.961760606     0.001747773
+
+#varA = phylogenetic level variance
+varA <- Rand_Var[1] 
+
+#varS = study level variance
+varS = Rand_Var[2]
+
+#varE = effect-size-specific effect
+varE = Rand_Var[4]
+
+#varM = samling error effect
+varM = Rand_Var[3]
+
+##Total variance equation
+varT = varA + varS + varE + varM 
+
+## study level heterogenity I^2s = varS/varT
+I2s <- varS/varT
+I2s*100
+#  Authors 
+#  2.247697
+
+## species level heterogenity I^2s = varA/varT
+I2u <- varA/varT
+I2u*100
+# animal 
+# 1.401465 
+
+## phylogenetic heritability, phylogenetic signal H2 = varA/varA + varS + varE
+H2 = varA/(varA + varS + varE)
+H2
+# animal 
+#0.3664978
+
+# Proportion of variance explained by random factors
+Sol <- color.Z$Sol/apply(color.Z$Sol,1,sum)
+# Get median values (50%) and 95% quantiles
+apply(Sol,2,function(c) quantile(c,probs = c(0.025,0.5,0.975)))
+
+#### Get the prediction interval of the overall effect size ####
+pred_matrix <- predict(color.Z, interval = "prediction")
+pred_interval <- apply(pred_matrix, 2, mean)
+pred_interval
+#      fit        lwr        upr 
+#0.2762198 -0.8181040  1.3765128
+
+#### Get the posterior mean and 95% CI of the overall effect size ####
+pred_matrix <- predict(color.Z, interval = "confidence")
+confidence <- apply(pred_matrix, 2, mean)
+confidence
+#      fit        lwr        upr 
+#0.27294299 -0.08404796  0.62026270 
+
+#### publication bias ####
+# getting predictions (raw data - predictions = meta-analytic residuals)
+Precision<-metadata$Weight
+MR<-metadata$Fisher_Z-pred_matrix[1:149]
+zMR<-MR*Precision
+metadata[,c("zMR","Precision")]<-c(zMR,Precision)
+
+# Egger's regression
+Egger<-glm(zMR~Precision,family="gaussian",data=metadata)
+summary(Egger)
+
+#Call:
+#glm(formula = zMR ~ Precision, family = "gaussian", data = metadata)
+
+#Deviance Residuals: 
+#  Min        1Q    Median      3Q       Max  
+#-5.8976  -1.4052  -0.2322   1.2145  13.1119    
+
+#Coefficients:
+#             Estimate Std. Error t value Pr(>|t|)  
+#(Intercept)  0.53805    0.36998   1.454   0.1480  
+#Precision   -0.08381    0.04405  -1.902   0.0591 .
+#  ---
+#  Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+#(Dispersion parameter for gaussian family taken to be 5.671266)
+
+#Null deviance: 868.93  on 148  degrees of freedom
+#Residual deviance: 848.05  on 147  degrees of freedom
+#AIC: 687.95
+
+#Number of Fisher Scoring iterations: 2
+
+Trim_Fill <- trimfill(MR, metadata$SE_Z)
+Trim_Fill
+
+#Number of studies combined: k = 149 (with 0 added studies)
+
+#                                         95%-CI     z  p-value
+#Random effects model     0.0036 [-0.0476; 0.0549] 0.14  0.8893
+
+#Quantifying heterogeneity:
+#tau^2 = 0.0692 [0.1138; 0.2059]; tau = 0.2630 [0.3374; 0.4537]
+#I^2 = 82.8% [80.2%; 85.1%]; H = 2.41 [2.25; 2.59]
+
+#Test of heterogeneity:
+#     Q  d.f. p-value
+#860.26  148 < 0.0001
+
+#Details on meta-analytical method:
+#- Inverse variance method
+#- DerSimonian-Laird estimator for tau^2
+#- Jackson method for confidence interval of tau^2 and tau
+#- Trim-and-fill method to adjust for funnel plot asymmetry
+
+cols <- rep(0,150)
+for (i in 1:150){
+  if (i > 150){
+    cols[i] <- "forestgreen"
+  } else if (metadatas$Classification[i] == "carotenoid"){
+    cols[i] <- "orange"
+  } else if (metadatas$Eu_Pheomelanin[i] == "eumelanin"){
+    cols[i] <- "black"
+  } else if (metadatas$Eu_Pheomelanin[i] == "pheomelanin"){
+    cols[i] <- "orangered3"
+  } else if (metadatas$Classification[i] == "unknown"){
+    cols[i] <- "darkorchid4"
+  } else if (metadatas$Classification[i] == "structural"){
+    cols[i] <- "cornflowerblue"
+  } else if (metadatas$Classification[i] == "pteridine"){
+    cols[i] <- "deeppink"
+  } 
+}
+
+shapes <- rep(0,167)
+for (i in 1:167){
+  if (i >= 151){
+    shapes[i] <- 8
+  } else if (metadatas$Plasticity[i] == "Plastic"){
+    shapes[i] <- 20
+  } else if (metadatas$Plasticity[i] == "No"){
+    shapes[i] <- 18
+  } 
+}
+
+FTF_plot <- meta::funnel(Trim_Fill, yaxis="invse", xlim = c(-3,3),
+                         xlab = "Fisher Z", ylab = "Inverse SE", 
+                         col = cols, pch = shapes,
+                         level = 0.95, contour = c(0.9, 0.95, 0.99))$col.contour
+#legend
+words <- c("Carotenoid", "Eumelanin", "Pheomelanin", "Unknown",
+           "Structural", "Pteridine",  "Plastic", "Non-Plastic", 
+           "Trim and Fill Points")
+Cols <- c("orange","black", "orangered3", "darkorchid4", 
+          "cornflowerblue", "deeppink", "grey50", "grey50", 
+          "forestgreen")
+points <- c(15,15,15,15,15,15,20,18,8)
+ys <- c(20.1,19.3,18.5,17.7,16.9,16.1,15.3,14.5,13.7)
+for(i in 1:8){
+  points(x=-2.9, y=ys[i], pch=points[i], col=Cols[i])
+  text(x=-2.9,y=ys[i], labels=words[i], pos=4,cex=.75)
+}
+#Export 6x6
+
+
+#### Medians and 95% Credible Intervals ####
+emmeans(color.Z, ~ Eu_Pheomelanin, data=metadata, level = 0.95)
+#Eu_Pheomelanin emmean lower.HPD upper.HPD
+#carotenoid      0.154   -0.1673     0.461
+#eumelanin       0.343    0.0379     0.675
+#pheomelanin     0.222   -0.1579     0.633
+#structural      0.341   -0.1240     0.784
+#unknown         0.422   -0.0217     0.825
+#Point estimate displayed: median 
+#HPD interval probability: 0.95
+Zcar <- 0.154; lcar <- -0.1673; ucar <- 0.461
+Zeu <- 0.343;  leu <-   0.0379; ueu <- 0.675
+Zph <- 0.222;  lph <-  -0.1579; uph <- 0.633
+Zst <- 0.341;  lst <-  -0.1240; ust <- 0.784
+Zun <- 0.422;  lun <-  -0.0217; uun <- 0.825
+
+#Probability above 0
+p_significance(color.Z$Sol, threshold = 0)
+#Parameter                 |   ps
+#Eu_Pheomelanincarotenoid  | 0.88
+#Eu_Pheomelanineumelanin   | 0.99
+#Eu_Pheomelaninpheomelanin | 0.89
+#Eu_Pheomelaninstructural  | 0.94
+#Eu_Pheomelaninunknown     | 0.97
+
+
+#Fisher Z Plot
+plot(NA,xlim=c(-2,2),ylim=c(0.7,1.8),axes=F,ann=F)
+axis(1)
+#Fisher Z
+#Carotenoid
+segments(lcar,1.6,ucar,1.6);
+points(Zcar,1.6,pch=16,col = "black",xpd=NA)
+#Eumelanin
+segments(leu,1.4,ueu,1.4);
+points(Zeu,1.4,pch=16,col = "black",xpd=NA)
+#Pheomelanin
+segments(lph,1.2,uph,1.2);
+points(Zph,1.2,pch=16,col = "black",xpd=NA)
+#Structural
+segments(lst,1,ust,1);
+points(Zst,1,pch=16,col = "black",xpd=NA)
+#Unknown
+segments(lun,0.8,uun,0.8);
+points(Zun,0.8,pch=16,col = "black",xpd=NA)
+
+#Add dashed line at 0
+abline(v = 0, lty = 1)
+#Add axis labels
+title(xlab = "Fisher Z")
+text(-2.1,1.6,"Carotenoid", cex = 0.9, adj = c(0,0))
+text(-2.1,1.4,"Eumelanin", cex = 0.9, adj = c(0,0))
+text(-2.1,1.2,"Pheomelanin", cex = 0.9, adj = c(0,0))
+text(-2.1,1,"Structural", cex = 0.9, adj = c(0,0))
+text(-2.1,0.8,"Unknown", cex = 0.9, adj = c(0,0))
+
+#Export 6x6
+#### Fisher Z with Publication Bias correction ####
+#Fisher Z Plot
+plot(NA,xlim=c(-2,2),ylim=c(0.7,1.8),axes=F,ann=F)
+axis(1)
+#Fisher Z
+#Carotenoid
+segments(lcar+0.0036,1.6,ucar+0.0036,1.6);
+points(Zcar+0.0036,1.6,pch=16,col = "black",xpd=NA)
+#Eumelanin
+segments(leu+0.0036,1.4,ueu+0.0036,1.4);
+points(Zeu+0.0036,1.4,pch=16,col = "black",xpd=NA)
+#Pheomelanin
+segments(lph+0.0036,1.2,uph+0.0036,1.2);
+points(Zph+0.0036,1.2,pch=16,col = "black",xpd=NA)
+#Structural 
+segments(lst+0.0036,1,ust+0.0036,1);
+points(Zst+0.0036,1,pch=16,col = "black",xpd=NA)
+#Unknown
+segments(lun+0.0036,0.8,uun+0.0036,0.8);
+points(Zun+0.0036,0.8,pch=16,col = "black",xpd=NA)
+
+#Add dashed line at 0
+abline(v = 0, lty = 1)
+#Add axis labels
+title(xlab = "Fisher Z")
+text(-2.1,1.6,"Carotenoid", cex = 0.9, adj = c(0,0))
+text(-2.1,1.4,"Eumelanin", cex = 0.9, adj = c(0,0))
+text(-2.1,1.2,"Pheomelanin", cex = 0.9, adj = c(0,0))
+text(-2.1,1,"Structural", cex = 0.9, adj = c(0,0))
+text(-2.1,0.8,"Unknown", cex = 0.9, adj = c(0,0))
+
+#Export 6x6
+
+
+################## "BEST" MODEL (plasticity) ##############
+load("R Files/plasticity_Z.RDATA")
+
+#prior with expanded parameters (Cuachy Distribution close to a Fisher Z)
+prior.ex2<- list(G = list(G1 = list(V = 1, nu = 1, alpha.mu = 0.4, alpha.V = 0.5), 
+                          G2 = list(V = 1, nu = 1, alpha.mu = 0.4, alpha.V = 0.5), 
+                          G3 = list(V = 1, nu = 1, alpha.mu = 0.4, alpha.V = 0.5)), 
+                 R = list(V=1, nu=0.02))
+
+#Run the model
+plas.Z <- MCMCglmm(Fisher_Z ~ Plasticity - 1, 
+                    random = ~animal + Authors + us(SE_Z):units, 
+                    data=metadata, pedigree = tree, 
+                    nitt = 800000, thin = 100, burnin = 600000, 
+                    prior = prior.ex2)
+#Save the model for later
+#save(plas.Z, file = "plasticity_Z.RDATA")
+
+summary(plas.Z)
+#Iterations = 600001:799901
+#Thinning interval  = 100
+#Sample size  = 2000 
+
+#DIC: -238.4765 
+
+#Location effects: Fisher_Z ~ Plasticity - 1 
+#                           post.mean l-95% CI u-95% CI eff.samp pMCMC  
+#PlasticityNo        0.29938 -0.01258  0.55862     2000 0.042 *
+#PlasticityPlastic   0.20436 -0.11151  0.51666     2000 0.178 
+#Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+#Model diagnostics
+plot(plas.Z$Sol)
+autocorr(plas.Z$Sol)
+autocorr(plas.Z$VCV)
+
+xsim <- simulate(plas.Z)
+
+model_test <- data.frame(metadata$Fisher_Z, metadata$Weight, xsim)
+colnames(model_test) <- c("Fisher_Z", "invSE", "sim")
+ggplot() +
+  geom_point(data=model_test, aes(x=Fisher_Z, y=invSE)) +
+  geom_point(data=model_test, aes(x=sim, y=invSE), color="red")
+
+# Proportion of variance explained by random factors
+rand <- plas.Z$VCV/apply(plas.Z$VCV,1,sum)
+# Get median values (50%) and 95% quantiles
+apply(rand,2,function(c) quantile(c,probs = c(0.025,0.5,0.975)))
+
+#### calculate I^2 to quantify heterogeneity ####
+## As per Nakagawa & Santos 2012, calculate the different random effect-level I^2's
+# Get the mean value of the variance for all the random effects
+Rand_Var <- apply(rand,2,mean)
+Rand_Var
+#     animal         Authors         SE_Z:SE_Z.units   units 
+#0.01292157      0.02360112      0.96169511      0.00178220 
+
+#varA = phylogenetic level variance
+varA <- Rand_Var[1] 
+
+#varS = study level variance
+varS = Rand_Var[2]
+
+#varE = effect-size-specific effect
+varE = Rand_Var[4]
+
+#varM = samling error effect
+varM = Rand_Var[3]
+
+##Total variance equation
+varT = varA + varS + varE + varM 
+
+## study level heterogenity I^2s = varS/varT
+I2s <- varS/varT
+I2s*100
+#  Authors 
+#  2.360112
+
+## species level heterogenity I^2s = varA/varT
+I2u <- varA/varT
+I2u*100
+# animal 
+# 1.292157 
+
+## phylogenetic heritability, phylogenetic signal H2 = varA/varA + varS + varE
+H2 = varA/(varA + varS + varE)
+H2
+# animal 
+#0.3373348
+
+# Proportion of variance explained by random factors
+Sol <- plas.Z$Sol/apply(plas.Z$Sol,1,sum)
+# Get median values (50%) and 95% quantiles
+apply(Sol,2,function(c) quantile(c,probs = c(0.025,0.5,0.975)))
+
+#### Get the prediction interval of the overall effect size ####
+pred_matrix <- predict(plas.Z, interval = "prediction")
+pred_interval <- apply(pred_matrix, 2, mean)
+pred_interval
+#      fit        lwr        upr 
+#0.2730883 -0.7864272  1.3430842
+
+#### Get the posterior mean and 95% CI of the overall effect size ####
+pred_matrix <- predict(plas.Z, interval = "confidence")
+confidence <- apply(pred_matrix, 2, mean)
+confidence
+#       fit        lwr        upr 
+#0.26749754 -0.04577637  0.54453507
+
+#### publication bias ####
+# getting predictions (raw data - predictions = meta-analytic residuals)
+Precision<-metadata$Weight
+MR<-metadata$Fisher_Z-pred_matrix[1:149]
+zMR<-MR*Precision
+metadata[,c("zMR","Precision")]<-c(zMR,Precision)
+
+# Egger's regression
+Egger<-glm(zMR~Precision,family="gaussian",data=metadata)
+summary(Egger)
+
+#Call:
+#glm(formula = zMR ~ Precision, family = "gaussian", data = metadata)
+
+#Deviance Residuals: 
+#  Min      1Q    Median    3Q      Max  
+#-6.180  -1.514  -0.523   1.113  13.405   
+
+#Coefficients:
+#             Estimate Std. Error t value Pr(>|t|)  
+#(Intercept)  1.02662    0.38543   2.664 0.008594 ** 
+#Precision   -0.16491    0.04589  -3.593 0.000445 ***
+#  ---
+#  Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+#(Dispersion parameter for gaussian family taken to be 6.260947)
+
+#Null deviance: 1001.20  on 148  degrees of freedom
+#Residual deviance: 920.36  on 147  degrees of freedom
+#AIC: 700.15
+
+#Number of Fisher Scoring iterations: 2
+
+Trim_Fill <- trimfill(MR, metadata$SE_Z)
+Trim_Fill
+
+#Number of studies combined: k = 156 (with 7 added studies)
+
+#                                         95%-CI     z  p-value
+#Random effects model   -0.0602 [-0.1228; 0.0025] -1.88  0.0599
+
+#Quantifying heterogeneity:
+#tau^2 = 0.1218 [0.2172; 0.3790]; tau = 0.3490 [0.4661; 0.6157]
+#I^2 = 89.1% [87.7%; 90.3%]; H = 3.03 [2.85; 3.21]
+
+#Test of heterogeneity:
+#     Q  d.f. p-value
+#1418.51  155 < 0.0001
+
+#Details on meta-analytical method:
+#- Inverse variance method
+#- DerSimonian-Laird estimator for tau^2
+#- Jackson method for confidence interval of tau^2 and tau
+#- Trim-and-fill method to adjust for funnel plot asymmetry
+
+cols <- rep(0,157)
+for (i in 1:157){
+  if (i > 149){
+    cols[i] <- "forestgreen"
+  } else if (metadatas$Classification[i] == "carotenoid"){
+    cols[i] <- "orange"
+  } else if (metadatas$Eu_Pheomelanin[i] == "eumelanin"){
+    cols[i] <- "black"
+  } else if (metadatas$Eu_Pheomelanin[i] == "pheomelanin"){
+    cols[i] <- "orangered3"
+  } else if (metadatas$Classification[i] == "unknown"){
+    cols[i] <- "darkorchid4"
+  } else if (metadatas$Classification[i] == "structural"){
+    cols[i] <- "cornflowerblue"
+  } else if (metadatas$Classification[i] == "pteridine"){
+    cols[i] <- "deeppink"
+  } 
+}
+
+shapes <- rep(0,157)
+for (i in 1:157){
+  if (i >= 150){
+    shapes[i] <- 8
+  } else if (metadatas$Plasticity[i] == "Plastic"){
+    shapes[i] <- 20
+  } else if (metadatas$Plasticity[i] == "No"){
+    shapes[i] <- 18
+  } 
+}
+
+FTF_plot <- meta::funnel(Trim_Fill, yaxis="invse", xlim = c(-3,3),
+                         xlab = "Fisher Z", ylab = "Inverse SE", 
+                         col = cols, pch = shapes,
+                         level = 0.95, contour = c(0.9, 0.95, 0.99))$col.contour
+#legend
+words <- c("Carotenoid", "Eumelanin", "Pheomelanin", "Unknown",
+           "Structural", "Pteridine",  "Plastic", "Non-Plastic", 
+           "Trim and Fill Points")
+Cols <- c("orange","black", "orangered3", "darkorchid4", 
+          "cornflowerblue", "deeppink", "grey50", "grey50", 
+          "forestgreen")
+points <- c(15,15,15,15,15,15,20,18,8)
+ys <- c(20.1,19.3,18.5,17.7,16.9,16.1,15.3,14.5,13.7)
+for(i in 1:8){
+  points(x=-2.9, y=ys[i], pch=points[i], col=Cols[i])
+  text(x=-2.9,y=ys[i], labels=words[i], pos=4,cex=.75)
+}
+#Export 6x6
+
+
+#### Medians and 95% Credible Intervals ####
+#Probability above 0
+p_significance(plas.Z$Sol, threshold = 0)
+#Parameter         |   ps
+#PlasticityNo      | 0.98
+#PlasticityPlastic | 0.91
+
+
+emmeans(plas.Z, ~ Plasticity, data=metadata, level = 0.95)
+#Plasticity emmean lower.HPD upper.HPD
+#No          0.294   -0.0126     0.559
+#Plastic     0.208   -0.1115     0.517
+Znpl <- 0.294; lnpl <- -0.0126; unpl <- 0.559
+Zpl <- 0.208;  lpl <- -0.1115;  upl <- 0.517
+
+#Fisher Z Plot
+plot(NA,xlim=c(-2,2),ylim=c(0.3,0.7),axes=F,ann=F)
+axis(1)
+#Fisher Z
+#Plastic
+segments(lpl,0.6,upl,0.6);
+points(Zpl,0.6,pch=16,col = "black",xpd=NA)
+#Non-Plastic
+segments(lnpl,0.4,unpl,0.4);
+points(Znpl,0.4,pch=16,col = "black",xpd=NA)
+
+#Add dashed line at 0
+abline(v = 0, lty = 1)
+#Add axis labels
+title(xlab = "Fisher Z")
+text(-2.1,0.6,"Plastic", cex = 0.9, adj = c(0,0))
+text(-2.1,0.4,"Non-Plastic", cex = 0.9, adj = c(0,0))
+
+#Export 6x6
+#### Fisher Z with Publication Bias correction ####
+#Fisher Z Plot
+plot(NA,xlim=c(-2,2),ylim=c(0.3,0.7),axes=F,ann=F)
+axis(1)
+#Fisher Z
+#Plastic
+segments(lpl-0.0602,0.6,upl-0.0602,0.6);
+points(Zpl-0.0602,0.6,pch=16,col = "black",xpd=NA)
+#Non-Plastic
+segments(lnpl-0.0602,0.4,unpl-0.0602,0.4);
+points(Znpl-0.0602,0.4,pch=16,col = "black",xpd=NA)
+
+#Add dashed line at 0
+abline(v = 0, lty = 1)
+#Add axis labels
+title(xlab = "Fisher Z")
+text(-2.1,0.6,"Plastic", cex = 0.9, adj = c(0,0))
+text(-2.1,0.4,"Non-Plastic", cex = 0.9, adj = c(0,0))
+
+#Export 6x6
+#### Fisher Z with Publication Bias correction Combined Class and Plasticity####
+#Fisher Z Plot
+plot(NA,xlim=c(-2,2),ylim=c(-0.1,1.7),axes=F,ann=F)
+axis(1)
+#Fisher Z
+#Carotenoid
+segments(lcar ,1.6,ucar,1.6);
+points(Zcar,1.6,pch=16,col = "black",xpd=NA)
+#Eumelanin
+segments(leu,1.4,ueu,1.4);
+points(Zeu,1.4,pch=16,col = "black",xpd=NA)
+#Pheomelanin
+segments(lph,1.2,uph,1.2);
+points(Zph,1.2,pch=16,col = "black",xpd=NA)
+#Structural 
+segments(lst,1,ust,1);
+points(Zst,1,pch=16,col = "black",xpd=NA)
+#Unknown
+segments(lun,0.8,uun,0.8);
+points(Zun,0.8,pch=16,col = "black",xpd=NA)
+#Mean Class Model
+segments(-0.08404796,0.6,0.62026270,0.6);
+points(0.27294299,0.6,pch=16,col = "black",xpd=NA)
+#Plastic
+segments(lpl-0.0602,0.4,upl-0.0602,0.4);
+points(Zpl-0.0602,0.4,pch=16,col = "black",xpd=NA)
+#Non-Plastic
+segments(lnpl-0.0602,0.2,unpl-0.0602,0.2);
+points(Znpl-0.0602,0.2,pch=16,col = "black",xpd=NA)
+#Mean Plasticity Model
+segments(-0.04577637-0.0602,0,0.54453507-0.0602,0);
+points(0.26749754-0.0602,0,pch=16,col = "black",xpd=NA)
+
+#Add dashed line at 0
+abline(v = 0, lty = 1)
+abline(h = 0.5, lty = 1)
+#Add axis labels
+title(xlab = "Fisher Z")
+text(-2.1,1.6,"Carotenoid", cex = 0.9, adj = c(0,0))
+text(-2.1,1.4,"Eumelanin*", cex = 0.9, adj = c(0,0), font = 2)
+text(-2.1,1.2,"Pheomelanin", cex = 0.9, adj = c(0,0))
+text(-2.1,1,"Structural", cex = 0.9, adj = c(0,0))
+text(-2.1,0.8,"Unknown", cex = 0.9, adj = c(0,0))
+text(-2.1,0.6,"Pigment Class Model", cex = 0.9, adj = c(0,0))
+text(-2.1,0.4,"Plastic", cex = 0.9, adj = c(0,0))
+text(-2.1,0.2,"Non-Plastic", cex = 0.9, adj = c(0,0))
+text(-2.1,0,"Plasticity Model", cex = 0.9, adj = c(0,0))
+#Export 6x6
+
 ################## "BEST" MODEL (class and plasticity) ##############
-load("R Files/mixed_Z.RDATA")
+load("R Files/mixed_CP_Z.RDATA")
 
 #prior with expanded parameters (Cuachy Distribution close to a Fisher Z)
 prior.ex2<- list(G = list(G1 = list(V = 1, nu = 1, alpha.mu = 0.4, alpha.V = 0.5), 
@@ -583,7 +1209,7 @@ mixed.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Plasticity - 1,
                    nitt = 800000, thin = 100, burnin = 600000, 
                    prior = prior.ex2)
 #Save the model for later
-#save(mixed.Z, file = "mixed_Z.RDATA")
+#save(mixed.Z, file = "mixed_CP_Z.RDATA")
 
 summary(mixed.Z)
 #Iterations = 600001:799901
@@ -900,7 +1526,7 @@ text(-2.1,0.4,"Non-Plastic", cex = 0.9, adj = c(0,0))
 
 #Export 6x6
 ################## "BEST" MODEL (plasticity and sex) ##############
-load("R Files/mixed1_Z.RDATA")
+load("R Files/mixed_PS_Z.RDATA")
 
 #prior with expanded parameters (Cuachy Distribution close to a Fisher Z)
 prior.ex2<- list(G = list(G1 = list(V = 1, nu = 1, alpha.mu = 0.4, alpha.V = 0.5), 
@@ -915,7 +1541,7 @@ mixed1.Z <- MCMCglmm(Fisher_Z ~ Sex + Plasticity - 1,
                     nitt = 800000, thin = 100, burnin = 600000, 
                     prior = prior.ex2)
 #Save the model for later
-#save(mixed1.Z, file = "mixed1_Z.RDATA")
+#save(mixed1.Z, file = "mixed_PS_Z.RDATA")
 
 summary(mixed1.Z)
 #Iterations = 600001:799901
