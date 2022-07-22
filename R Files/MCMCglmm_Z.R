@@ -568,7 +568,197 @@ cps.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Sex + Plasticity - 1,
 cps.Z$DIC
 #-233.927
 
-###### Run the model add Vert/Invert ####
+###### Run the model Class, Plasticity, and Vert/Invert ####
+#Run the model
+cpv.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Plasticity + Vert_Invert -1, 
+                   random = ~animal + Authors + us(SE_Z):units, 
+                   data=metadata, pedigree = tree, 
+                   nitt = 2000000, thin = 1000, burnin = 1000000, 
+                   prior = prior.ex2)
+cpv.Z$DIC
+#-235.3293
+
+###### Run the model with Class, Sex, and Season ####
+#Run the model
+cssea.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Sex + Season - 1, 
+                  random = ~animal + Authors + us(SE_Z):units, 
+                  data=metadata, pedigree = tree, 
+                  nitt = 2000000, thin = 1000, burnin = 1000000, 
+                  prior = prior.ex2)
+cssea.Z$DIC
+#-226.4387
+
+###### Run the model Class, Plasticity, and Location ####
+#Run the model
+cpl.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Plasticity + Location -1, 
+                  random = ~animal + Authors + us(SE_Z):units, 
+                  data=metadata, pedigree = tree, 
+                  nitt = 2000000, thin = 1000, burnin = 1000000, 
+                  prior = prior.ex2)
+cpl.Z$DIC
+#-235.0754
+
+###### Run the model Class, Plasticity, and Season ####
+#Run the model
+cpsea.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Plasticity + Season -1, 
+                  random = ~animal + Authors + us(SE_Z):units, 
+                  data=metadata, pedigree = tree, 
+                  nitt = 2000000, thin = 1000, burnin = 1000000, 
+                  prior = prior.ex2)
+cpsea.Z$DIC
+#-225.9835
+
+###### Run the model Class, Sex, and Vert/Invert ####
+#Run the model
+csv.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Sex + Vert_Invert -1, 
+                    random = ~animal + Authors + us(SE_Z):units, 
+                    data=metadata, pedigree = tree, 
+                    nitt = 2000000, thin = 1000, burnin = 1000000, 
+                    prior = prior.ex2)
+csv.Z$DIC
+#-232.5056
+
+###### Run the model Class, Sex, and Location ####
+#Run the model
+csl.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Sex + Location -1, 
+                  random = ~animal + Authors + us(SE_Z):units, 
+                  data=metadata, pedigree = tree, 
+                  nitt = 2000000, thin = 1000, burnin = 1000000, 
+                  prior = prior.ex2)
+csl.Z$DIC
+#-233.454
+
+###### Run the model Class, Vert/Invert, and Location ####
+#Run the model
+cvl.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Vert_Invert + Location -1, 
+                  random = ~animal + Authors + us(SE_Z):units, 
+                  data=metadata, pedigree = tree, 
+                  nitt = 2000000, thin = 1000, burnin = 1000000, 
+                  prior = prior.ex2)
+cvl.Z$DIC
+#-234.8134
+
+###### Run the model Class, Vert/Invert, and Season ####
+#Run the model
+cvsea.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Vert_Invert + Season -1, 
+                  random = ~animal + Authors + us(SE_Z):units, 
+                  data=metadata, pedigree = tree, 
+                  nitt = 2000000, thin = 1000, burnin = 1000000, 
+                  prior = prior.ex2)
+cvsea.Z$DIC
+#-226.9591
+
+###### Run the model Class, Location, and Season ####
+#Run the model
+clsea.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Location + Season -1, 
+                    random = ~animal + Authors + us(SE_Z):units, 
+                    data=metadata, pedigree = tree, 
+                    nitt = 2000000, thin = 1000, burnin = 1000000, 
+                    prior = prior.ex2)
+clsea.Z$DIC
+#-229.3553
+
+###### Run the model Plasticity, Sex, and Vert/Invert ####
+#Run the model
+psv.Z <- MCMCglmm(Fisher_Z ~ Plasticity + Sex + Vert_Invert -1, 
+                    random = ~animal + Authors + us(SE_Z):units, 
+                    data=metadata, pedigree = tree, 
+                    nitt = 5000000, thin = 1000, burnin = 2500000, 
+                    prior = prior.ex2)
+psv.Z$DIC
+#-236.4338
+
+###### Run the model Plasticity, Sex, and Location ####
+#Run the model
+psl.Z <- MCMCglmm(Fisher_Z ~ Plasticity + Sex + Location -1, 
+                  random = ~animal + Authors + us(SE_Z):units, 
+                  data=metadata, pedigree = tree, 
+                  nitt = 5000000, thin = 1000, burnin = 2500000, 
+                  prior = prior.ex2)
+psl.Z$DIC
+#-236.4045
+
+###### Run the model Plasticity, Sex, and Season ####
+#Run the model
+pssea.Z <- MCMCglmm(Fisher_Z ~ Plasticity + Sex + Season -1, 
+                  random = ~animal + Authors + us(SE_Z):units, 
+                  data=metadata, pedigree = tree, 
+                  nitt = 2000000, thin = 1000, burnin = 1000000, 
+                  prior = prior.ex2)
+pssea.Z$DIC
+#-229.5225
+
+###### Run the model Plasticity, Vert/Invert, and Location ####
+#Run the model
+pvl.Z <- MCMCglmm(Fisher_Z ~ Plasticity + Vert_Invert + Location -1, 
+                    random = ~animal + Authors + us(SE_Z):units, 
+                    data=metadata, pedigree = tree, 
+                    nitt = 5000000, thin = 1000, burnin = 2500000, 
+                    prior = prior.ex2)
+pvl.Z$DIC
+#-237.9993
+
+###### Run the model Plasticity, Vert/Invert, and Season ####
+#Run the model
+pvsea.Z <- MCMCglmm(Fisher_Z ~ Plasticity + Vert_Invert + Season -1, 
+                  random = ~animal + Authors + us(SE_Z):units, 
+                  data=metadata, pedigree = tree, 
+                  nitt = 2000000, thin = 1000, burnin = 1000000, 
+                  prior = prior.ex2)
+pvsea.Z$DIC
+#-228.8145
+
+###### Run the model Plasticity, Location, and Season ####
+#Run the model
+plsea.Z <- MCMCglmm(Fisher_Z ~ Plasticity + Location + Season -1, 
+                    random = ~animal + Authors + us(SE_Z):units, 
+                    data=metadata, pedigree = tree, 
+                    nitt = 2000000, thin = 1000, burnin = 1000000, 
+                    prior = prior.ex2)
+plsea.Z$DIC
+#-230.6133
+
+###### Run the model Sex, Vert/Invert, and Location ####
+#Run the model
+svl.Z <- MCMCglmm(Fisher_Z ~ Sex + Vert_Invert + Location -1, 
+                    random = ~animal + Authors + us(SE_Z):units, 
+                    data=metadata, pedigree = tree, 
+                    nitt = 5000000, thin = 1000, burnin = 2500000, 
+                    prior = prior.ex2)
+svl.Z$DIC
+#-235.6853
+
+###### Run the model Sex, Vert/Invert, and Season ####
+#Run the model
+svsea.Z <- MCMCglmm(Fisher_Z ~ Sex + Vert_Invert + Season -1, 
+                  random = ~animal + Authors + us(SE_Z):units, 
+                  data=metadata, pedigree = tree, 
+                  nitt = 2000000, thin = 1000, burnin = 1000000, 
+                  prior = prior.ex2)
+svsea.Z$DIC
+#-230.3167
+
+###### Run the model Sex, Location, and Season ####
+#Run the model
+slsea.Z <- MCMCglmm(Fisher_Z ~ Sex + Location + Season -1, 
+                    random = ~animal + Authors + us(SE_Z):units, 
+                    data=metadata, pedigree = tree, 
+                    nitt = 2000000, thin = 1000, burnin = 1000000, 
+                    prior = prior.ex2)
+slsea.Z$DIC
+#-230.5738
+
+###### Run the model Vert/Invert, Location, and Season ####
+#Run the model
+vlsea.Z <- MCMCglmm(Fisher_Z ~ Vert_Invert + Location + Season -1, 
+                    random = ~animal + Authors + us(SE_Z):units, 
+                    data=metadata, pedigree = tree, 
+                    nitt = 2000000, thin = 1000, burnin = 1000000, 
+                    prior = prior.ex2)
+vlsea.Z$DIC
+#-231.7949
+
+###### Run the model Class, Plasticity, Sex, and Vert/Invert ####
 #Run the model
 vert.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Sex + Plasticity + Vert_Invert -1, 
                   random = ~animal + Authors + us(SE_Z):units, 
@@ -578,7 +768,7 @@ vert.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Sex + Plasticity + Vert_Invert -1
 vert.Z$DIC
 #-232.5562
 
-###### Run the model add Location - Vert/Invert ####
+###### Run the model Class, Plasticity, Sex and Location ####
 #Run the model
 loc.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Sex + Plasticity + Location -1, 
                    random = ~animal + Authors + us(SE_Z):units, 
@@ -588,17 +778,7 @@ loc.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Sex + Plasticity + Location -1,
 loc.Z$DIC
 #-233.2415
 
-###### Run the model with Season not Plasticity ####
-#Run the model
-sea.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Sex + Season - 1, 
-                  random = ~animal + Authors + us(SE_Z):units, 
-                  data=metadata, pedigree = tree, 
-                  nitt = 2000000, thin = 1000, burnin = 1000000, 
-                  prior = prior.ex2)
-sea.Z$DIC
-#-226.4387
-
-###### Mixed Effects Model with Plasticity x Sex ####
+###### Mixed Effects Model Class, Plasticity, Sex, and Plasticity x Sex ####
 #Run the model
 pxs.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Sex + Plasticity 
                   + Sex*Plasticity - 1, 
@@ -609,7 +789,7 @@ pxs.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Sex + Plasticity
 pxs.Z$DIC
 #-232.9638
 
-###### Mixed Effects Model with Eu_Pheomelanin x Plasticity ####
+###### Mixed Effects Model Class, Plasticity, Sex, and Class x Plasticity ####
 #Run the model
 ebyp.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Sex + Plasticity 
                    + Eu_Pheomelanin*Plasticity - 1, 
@@ -620,7 +800,7 @@ ebyp.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Sex + Plasticity
 ebyp.Z$DIC
 #-226.7052
 
-###### Mixed Effects Model with Eu_Pheomelanin x Sex ####
+###### Mixed Effects Model Class, PLasticity, Sex, and Class x Sex ####
 #Run the model
 ebys.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Sex + Plasticity
                  + Sex*Eu_Pheomelanin - 1, 
@@ -2546,6 +2726,88 @@ text(-2.1,-0.4,"Field", cex = 0.9, adj = c(0,0))
 
 #Export 6x6
  
+################## Fisher Z with Pub Bias correction subset combined ####
+plot(NA,xlim=c(-2,2),ylim=c(-1.1,1.9),axes=F,ann=F)
+axis(1)
+
+#### Random Effects Model
+#Mean
+segments(0.04646076-0.0255,1.8,0.48347851-0.0255,1.8);
+points(0.26002580-0.0255,1.8,pch=16,col = "black",xpd=NA)
+
+#### Mixed: Color Class
+#Carotenoid
+segments(lcar ,1.6,ucar,1.6);
+points(Zcar,1.6,pch=16,col = "black",xpd=NA)
+#Eumelanin
+segments(leu,1.4,ueu,1.4);
+points(Zeu,1.4,pch=16,col = "black",xpd=NA)
+#Pheomelanin
+segments(lph,1.2,uph,1.2);
+points(Zph,1.2,pch=16,col = "black",xpd=NA)
+#Structural 
+segments(lst,1,ust,1);
+points(Zst,1,pch=16,col = "black",xpd=NA)
+#Unknown
+segments(lun,0.8,uun,0.8);
+points(Zun,0.8,pch=16,col = "black",xpd=NA)
+#Mean Class Model
+segments(-0.084,0.6,0.620,0.6);
+points(0.273,0.6,pch=16,col = "black",xpd=NA)
+
+#### Mixed: Plasticity
+#Plastic
+segments(lpl-0.0545,0.4,upl-0.0545,0.4);
+points(Zpl-0.0545,0.4,pch=16,col = "black",xpd=NA)
+#Non-Plastic
+segments(lnpl-0.0545,0.2,unpl-0.0545,0.2);
+points(Znpl-0.0545,0.2,pch=16,col = "black",xpd=NA)
+#Mean Plasticity Model
+segments(-0.051,0,0.467,0);
+points(0.207,0,pch=16,col = "black",xpd=NA)
+
+#### Mixed: Plasticity and Vert/Invert
+#Plastic
+segments(lpla-0.0488,-0.2,upla-0.0488,-0.2);
+points(Zpla-0.0488,-0.2,pch=16,col = "black",xpd=NA)
+#Non-Plastic
+segments(lnpla-0.0488,-0.4,unpla-0.0488,-0.4);
+points(Znpla-0.0488,-0.4,pch=16,col = "black",xpd=NA)
+#Vert
+segments(lve-0.0488,-0.6,uve-0.0488,-0.6);
+points(Zve-0.0488,-0.6,pch=16,col = "black",xpd=NA)
+#Invert
+segments(lin-0.0488,-0.8,uin-0.0488,-0.8);
+points(Zin-0.0488,-0.8,pch=16,col = "black",xpd=NA)
+#Mean Plasticity and Vert/Invert Model
+segments(-0.190,-1,0.585,-1);
+points(0.208,-1,pch=16,col = "black",xpd=NA)
+
+#Add dashed line at 0
+abline(v = 0, lty = 1)
+abline(h = 1.7, lty = 1)
+abline(h = 0.5, lty = 1)
+abline(h = -0.1, lty = 1)
+
+#Add axis labels
+title(xlab = "Fisher Z")
+text(-2.1,1.8,"Random Effects Model*", cex = 0.9, adj = c(0,0), font = 2)
+text(-2.1,1.6,"Carotenoid", cex = 0.9, adj = c(0,0))
+text(-2.1,1.4,"Eumelanin*", cex = 0.9, adj = c(0,0), font = 2)
+text(-2.1,1.2,"Pheomelanin", cex = 0.9, adj = c(0,0))
+text(-2.1,1,"Structural", cex = 0.9, adj = c(0,0))
+text(-2.1,0.8,"Unknown*", cex = 0.9, adj = c(0,0), font = 2)
+text(-2.1,0.6,"Overall Model", cex = 0.9, adj = c(0,0))
+text(-2.1,0.4,"Plastic", cex = 0.9, adj = c(0,0))
+text(-2.1,0.2,"Non-Plastic*", cex = 0.9, adj = c(0,0))
+text(-2.1,0,"Overall Model", cex = 0.9, adj = c(0,0))
+text(-2.1,-0.2,"Plastic", cex = 0.9, adj = c(0,0))
+text(-2.1,-0.4,"Non-Plastic", cex = 0.9, adj = c(0,0))
+text(-2.1,-0.6,"Vertebrate", cex = 0.9, adj = c(0,0))
+text(-2.1,-0.8,"Invertebrate", cex = 0.9, adj = c(0,0))
+text(-2.1,-1,"Overall Model", cex = 0.9, adj = c(0,0))
+
+#Export 8x8
 ################## Fisher Z with Publication Bias correction Combined ####
 plot(NA,xlim=c(-2,2),ylim=c(-5.1,1.7),axes=F,ann=F)
 axis(1)
