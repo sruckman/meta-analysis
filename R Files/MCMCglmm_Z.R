@@ -231,51 +231,20 @@ Trim_Fill
 0.48347851-0.0255
 
 
-cols <- rep(0,154)
-for (i in 1:154){
-  if (i > 149){
-    cols[i] <- "forestgreen"
-  } else if (metadatas$Classification[i] == "carotenoid"){
-    cols[i] <- "orange"
-  } else if (metadatas$Eu_Pheomelanin[i] == "eumelanin"){
-    cols[i] <- "black"
-  } else if (metadatas$Eu_Pheomelanin[i] == "pheomelanin"){
-    cols[i] <- "orangered3"
-  } else if (metadatas$Classification[i] == "unknown"){
-    cols[i] <- "darkorchid4"
-  } else if (metadatas$Classification[i] == "structural"){
-    cols[i] <- "cornflowerblue"
-  } else if (metadatas$Classification[i] == "pteridine"){
-    cols[i] <- "deeppink"
-  } 
-}
+cols <- rep("black",154)
 
-shapes <- rep(0,154)
-for (i in 1:154){
-  if (i >= 150){
-    shapes[i] <- 8
-  } else if (metadatas$Plasticity[i] == "Plastic"){
-    shapes[i] <- 20
-  } else if (metadatas$Plasticity[i] == "No"){
-    shapes[i] <- 18
-  } 
-}
+shapes <- c(rep(16,149),rep(8,4))
 
 FTF_plot <- meta::funnel(Trim_Fill, yaxis="invse", xlim = c(-3,3),
                          xlab = "Fisher Z", ylab = "Inverse SE", 
                          col = cols, pch = shapes,
                          level = 0.95, contour = c(0.9, 0.95, 0.99))$col.contour
 #legend
-words <- c("Carotenoid", "Eumelanin", "Pheomelanin", "Unknown",
-           "Structural", "Pteridine",  "Plastic", "Non-Plastic", 
-           "Trim and Fill Points")
-Cols <- c("orange","black", "orangered3", "darkorchid4", 
-          "cornflowerblue", "deeppink", "grey50", "grey50", 
-          "forestgreen")
-points <- c(15,15,15,15,15,15,20,18,8)
-ys <- c(20.1,19.3,18.5,17.7,16.9,16.1,15.3,14.5,13.7)
-for(i in 1:9){
-  points(x=-2.9, y=ys[i], pch=points[i], col=Cols[i])
+words <- c("Data Points", "Trim and Fill Points")
+points <- c(16,8)
+ys <- c(20.1,19.3)
+for(i in 1:2){
+  points(x=-2.9, y=ys[i], pch=points[i])
   text(x=-2.9,y=ys[i], labels=words[i], pos=4,cex=.75)
 }
 #Export 8x8
@@ -811,270 +780,7 @@ ebys.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Sex + Plasticity
 ebys.Z$DIC
 #-229.9616
 
-################## "BEST" MODEL (vert/invert) ##############
-load("R Files/vert_Z.RDATA")
 
-summary(vert.Z)
-#Iterations = 2500001:4999001
-#Thinning interval  = 1000
-#Sample size  = 2500 
-
-#DIC: -238.1355
-
-#Location effects: Fisher_Z ~ Eu_Pheomelanin - 1 
-#                           post.mean l-95% CI u-95% CI eff.samp pMCMC  
-#Vert_Invertinvertebrate   0.29724 -0.13230  0.72998     2500 0.170  
-#Vert_Invertvertebrate     0.25936 -0.04434  0.60560     2500 0.088 .
-#Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-
-#Model diagnostics
-plot(vert.Z$Sol)
-autocorr(vert.Z$Sol)
-autocorr(vert.Z$VCV)
-
-xsim <- simulate(vert.Z)
-
-model_test <- data.frame(metadata$Fisher_Z, metadata$Weight, xsim)
-colnames(model_test) <- c("Fisher_Z", "invSE", "sim")
-ggplot() +
-  geom_point(data=model_test, aes(x=Fisher_Z, y=invSE)) +
-  geom_point(data=model_test, aes(x=sim, y=invSE), color="red")
-
-# Proportion of variance explained by random factors
-rand <- vert.Z$VCV/apply(vert.Z$VCV,1,sum)
-# Get median values (50%) and 95% quantiles
-apply(rand,2,function(c) quantile(c,probs = c(0.025,0.5,0.975)))
-
-#### calculate I^2 to quantify heterogeneity ####
-## As per Nakagawa & Santos 2012, calculate the different random effect-level I^2's
-# Get the mean value of the variance for all the random effects
-Rand_Var <- apply(rand,2,mean)
-Rand_Var
-#     animal         Authors         SE_Z:SE_Z.units   units 
-#0.009661749     0.023963123     0.964621051     0.001754078
-
-#varA = phylogenetic level variance
-varA <- Rand_Var[1] 
-
-#varS = study level variance
-varS = Rand_Var[2]
-
-#varE = effect-size-specific effect
-varE = Rand_Var[4]
-
-#varM = samling error effect
-varM = Rand_Var[3]
-
-##Total variance equation
-varT = varA + varS + varE + varM 
-
-## study level heterogeneity I^2s = varS/varT
-I2s <- varS/varT
-I2s*100
-#  Authors 
-#  2.396312
-
-## species level heterogeneity I^2s = varA/varT
-I2u <- varA/varT
-I2u*100
-# animal 
-# 0.9661749
-
-## total heterogeneity
-(I2s*100) + (I2u*100)
-#3.362487 
-
-## phylogenetic heritability, phylogenetic signal H2 = varA/varA + varS + varE
-H2 = varA/(varA + varS + varE)
-H2
-# animal 
-#0.2730931
-
-# Proportion of variance explained by random factors
-Sol <- vert.Z$Sol/apply(vert.Z$Sol,1,sum)
-# Get median values (50%) and 95% quantiles
-apply(Sol,2,function(c) quantile(c,probs = c(0.025,0.5,0.975)))
-
-#### Get the prediction interval of the overall effect size ####
-pred_matrix <- predict(vert.Z, interval = "prediction")
-pred_interval <- apply(pred_matrix, 2, mean)
-pred_interval
-#      fit        lwr        upr 
-#0.2607961 -0.7997447  1.3241824
-
-#### Get the posterior mean and 95% CI of the overall effect size ####
-pred_matrix <- predict(vert.Z, interval = "confidence")
-confidence <- apply(pred_matrix, 2, mean)
-confidence
-#      fit        lwr        upr 
-#0.26114108 -0.04846914  0.61144020 
-
-#### publication bias ####
-# getting predictions (raw data - predictions = meta-analytic residuals)
-Precision<-metadata$Weight
-MR<-metadata$Fisher_Z-pred_matrix[1:149]
-zMR<-MR*Precision
-metadata[,c("zMR","Precision")]<-c(zMR,Precision)
-
-# Egger's regression
-Egger<-glm(zMR~Precision,family="gaussian",data=metadata)
-summary(Egger)
-
-#Call:
-#glm(formula = zMR ~ Precision, family = "gaussian", data = metadata)
-
-#Deviance Residuals: 
-#  Min        1Q    Median      3Q       Max  
-#-6.5861  -1.4792  -0.3826   1.0668  13.5966    
-
-#Coefficients:
-#             Estimate Std. Error t value Pr(>|t|)  
-#(Intercept)  0.85936    0.38540   2.230  0.02728 * 
-#Precision   -0.12918    0.04589  -2.815  0.00555 **
-#  ---
-#  Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-
-#(Dispersion parameter for gaussian family taken to be 6.259928)
-
-#Null deviance: 969.82  on 148  degrees of freedom
-#Residual deviance: 920.21  on 147  degrees of freedom
-#AIC: 700.12
-
-#Number of Fisher Scoring iterations: 2
-
-#### Since the intercept of Egger's regression is not significant 
-#### there is no publication bias. Trim and fill is only used for 
-#### funnel plot creation
-
-Trim_Fill <- trimfill(MR, metadata$SE_Z)
-Trim_Fill
-
-#Number of studies combined: k = 152 (with 3 added studies)
-
-#                                       95%-CI    z p-value
-#Random effects model -0.0165 [-0.0736; 0.0407] -0.56  0.5725
-
-#Quantifying heterogeneity:
-#tau^2 = 0.0943 [0.1697; 0.3000]; tau = 0.3070 [0.4119; 0.5477]
-#I^2 = 86.6% [84.7%; 88.2%]; H = 2.73 [2.56; 2.91]
-
-#Test of heterogeneity:
-#     Q  d.f.  p-value
-#1123.97  151 < 0.0001
-
-#Details on meta-analytical method:
-#- Inverse variance method
-#- DerSimonian-Laird estimator for tau^2
-#- Jackson method for confidence interval of tau^2 and tau
-#- Trim-and-fill method to adjust for funnel plot asymmetry
-
-cols <- rep(0,154)
-for (i in 1:154){
-  if (i > 150){
-    cols[i] <- "forestgreen"
-  } else if (metadatas$Classification[i] == "carotenoid"){
-    cols[i] <- "orange"
-  } else if (metadatas$Eu_Pheomelanin[i] == "eumelanin"){
-    cols[i] <- "black"
-  } else if (metadatas$Eu_Pheomelanin[i] == "pheomelanin"){
-    cols[i] <- "orangered3"
-  } else if (metadatas$Classification[i] == "unknown"){
-    cols[i] <- "darkorchid4"
-  } else if (metadatas$Classification[i] == "structural"){
-    cols[i] <- "cornflowerblue"
-  } else if (metadatas$Classification[i] == "pteridine"){
-    cols[i] <- "deeppink"
-  } 
-}
-
-shapes <- rep(0,154)
-for (i in 1:154){
-  if (i >= 151){
-    shapes[i] <- 8
-  } else if (metadatas$Vert_Invert[i] == "vertebrate"){
-    shapes[i] <- 20
-  } else if (metadatas$Vert_Invert[i] == "invertebrate"){
-    shapes[i] <- 18
-  } 
-}
-
-FTF_plot <- meta::funnel(Trim_Fill, yaxis="invse", xlim = c(-3,3),
-                         xlab = "Fisher Z", ylab = "Inverse SE", 
-                         col = cols, pch = shapes,
-                         level = 0.95, contour = c(0.9, 0.95, 0.99))$col.contour
-#legend
-words <- c("Carotenoid", "Eumelanin", "Pheomelanin", "Unknown",
-           "Structural", "Pteridine",  "Vertebrate", "Invertebrate", 
-           "Trim and Fill Points")
-Cols <- c("orange","black", "orangered3", "darkorchid4", 
-          "cornflowerblue", "deeppink", "grey50", "grey50", 
-          "forestgreen")
-points <- c(15,15,15,15,15,15,20,18,8)
-ys <- c(20.1,19.3,18.5,17.7,16.9,16.1,15.3,14.5,13.7)
-for(i in 1:8){
-  points(x=-2.9, y=ys[i], pch=points[i], col=Cols[i])
-  text(x=-2.9,y=ys[i], labels=words[i], pos=4,cex=.75)
-}
-#Export 8x8
-
-
-#### Adjusted mean and 95% confidence interval #####
-#              fit               lwr              upr 
-#0.26114108-0.0165 -0.04846914-0.0165 0.61144020-0.0165
-#        0.2446411        -0.06496914         0.5949402
-0.26114108-0.0165
--0.04846914-0.0165
-0.61144020-0.0165
-
-#### Medians and 95% Credible Intervals ####
-emmeans(vert.Z, ~ Vert_Invert, data=metadata, level = 0.95)
-#Vert_Invert emmean lower.HPD upper.HPD
-#invertebrate  0.296   -0.1323     0.730
-#vertebrate    0.256   -0.0443     0.606
-#Point estimate displayed: median 
-#HPD interval probability: 0.95
-Zi <- 0.296; li <- -0.1323; ui <- 0.730
-Zv <- 0.256; lv <- -0.0443; uv <- 0.606
-
-#Fisher Z Plot
-plot(NA,xlim=c(-2,2),ylim=c(1.3,1.8),axes=F,ann=F)
-axis(1)
-#Fisher Z
-#Vertebrate
-segments(lv,1.6,uv,1.6);
-points(Zv,1.6,pch=16,col = "black",xpd=NA)
-#Invertebrate
-segments(li,1.4,ui,1.4);
-points(Zi,1.4,pch=16,col = "black",xpd=NA)
-
-#Add dashed line at 0
-abline(v = 0, lty = 1)
-#Add axis labels
-title(xlab = "Fisher Z")
-text(-2.1,1.6,"Vertebrate", cex = 0.9, adj = c(0,0))
-text(-2.1,1.4,"Invertebrate", cex = 0.9, adj = c(0,0))
-
-#Export 6x6
-#### Fisher Z with Publication Bias correction ####
-#Fisher Z Plot
-plot(NA,xlim=c(-2,2),ylim=c(0.3,0.7),axes=F,ann=F)
-axis(1)
-#Fisher Z
-#Vert
-segments(lv-0.0165,0.6,uv-0.0165,0.6);
-points(Zv-0.0165,0.6,pch=16,col = "black",xpd=NA)
-#Invert
-segments(li-0.0165,0.4,ui-0.0165,0.4);
-points(Zi-0.0165,0.4,pch=16,col = "black",xpd=NA)
-
-#Add dashed line at 0
-abline(v = 0, lty = 1)
-#Add axis labels
-title(xlab = "Fisher Z")
-text(-2.1,0.6,"Vertebrate", cex = 0.9, adj = c(0,0))
-text(-2.1,0.4,"Invertebrate", cex = 0.9, adj = c(0,0))
-
-#Export 6x6
 ################## "BEST" MODEL (class) ##############
 load("R Files/class_Z.RDATA")
 
@@ -1507,33 +1213,15 @@ Trim_Fill
 0.00348823-0.0545
 0.52142155-0.0545
   
-cols <- rep(0,157)
-for (i in 1:157){
-  if (i > 150){
-    cols[i] <- "forestgreen"
-  } else if (metadatas$Classification[i] == "carotenoid"){
-    cols[i] <- "orange"
-  } else if (metadatas$Eu_Pheomelanin[i] == "eumelanin"){
-    cols[i] <- "black"
-  } else if (metadatas$Eu_Pheomelanin[i] == "pheomelanin"){
-    cols[i] <- "orangered3"
-  } else if (metadatas$Classification[i] == "unknown"){
-    cols[i] <- "darkorchid4"
-  } else if (metadatas$Classification[i] == "structural"){
-    cols[i] <- "cornflowerblue"
-  } else if (metadatas$Classification[i] == "pteridine"){
-    cols[i] <- "deeppink"
-  } 
-}
-
+cols <- rep("black",157)
 shapes <- rep(0,157)
 for (i in 1:157){
-  if (i > 150){
+  if (i >= 150){
     shapes[i] <- 8
-  } else if (metadatas$Plasticity[i] == "Plastic"){
-    shapes[i] <- 20
-  } else if (metadatas$Plasticity[i] == "No"){
-    shapes[i] <- 18
+  } else if (metadata$Plasticity[i] == "Plastic"){
+    shapes[i] <- 15
+  } else if (metadata$Plasticity[i] == "No"){
+    shapes[i] <- 16
   } 
 }
 
@@ -1542,16 +1230,11 @@ FTF_plot <- meta::funnel(Trim_Fill, yaxis="invse", xlim = c(-3,3),
                          col = cols, pch = shapes,
                          level = 0.95, contour = c(0.9, 0.95, 0.99))$col.contour
 #legend
-words <- c("Carotenoid", "Eumelanin", "Pheomelanin", "Unknown",
-           "Structural", "Pteridine",  "Plastic", "Non-Plastic", 
-           "Trim and Fill Points")
-Cols <- c("orange","black", "orangered3", "darkorchid4", 
-          "cornflowerblue", "deeppink", "grey50", "grey50", 
-          "forestgreen")
-points <- c(15,15,15,15,15,15,20,18,8)
-ys <- c(20.1,19.3,18.5,17.7,16.9,16.1,15.3,14.5,13.7)
-for(i in 1:8){
-  points(x=-2.9, y=ys[i], pch=points[i], col=Cols[i])
+words <- c("Plastic", "Non-Plastic", "Trim and Fill Points")
+points <- c(15,16,8)
+ys <- c(20.1,19.3,18.5)
+for(i in 1:3){
+  points(x=-2.9, y=ys[i], pch=points[i])
   text(x=-2.9,y=ys[i], labels=words[i], pos=4,cex=.75)
 }
 #Export 8x8
@@ -1609,6 +1292,543 @@ abline(v = 0, lty = 1)
 title(xlab = "Fisher Z")
 text(-2.1,0.6,"Plastic", cex = 0.9, adj = c(0,0))
 text(-2.1,0.4,"Non-Plastic", cex = 0.9, adj = c(0,0))
+
+#Export 6x6
+################## "BEST" MODEL (plasticity and vert/invert) ##############
+load("R Files/pv_Z.RDATA")
+
+summary(pv.Z)
+#Iterations = 2500001:4999001
+#Thinning interval  = 1000
+#Sample size  = 2500 
+
+#DIC: -238.3022 
+
+#Location effects: Fisher_Z ~ Plasticity - 1 
+#                           post.mean l-95% CI u-95% CI eff.samp pMCMC  
+#PlasticityNo            0.30746 -0.12834  0.75337     2500 0.168
+#PlasticityPlastic       0.22155 -0.22211  0.73506     2500 0.350
+#Vert_Invertvertebrate  -0.02325 -0.56563  0.55058     2500 0.929
+#Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+#Model diagnostics
+plot(pv.Z$Sol)
+autocorr(pv.Z$Sol)
+autocorr(pv.Z$VCV)
+
+xsim <- simulate(pv.Z)
+
+model_test <- data.frame(metadata$Fisher_Z, metadata$Weight, xsim)
+colnames(model_test) <- c("Fisher_Z", "invSE", "sim")
+ggplot() +
+  geom_point(data=model_test, aes(x=Fisher_Z, y=invSE)) +
+  geom_point(data=model_test, aes(x=sim, y=invSE), color="red")
+
+# Proportion of variance explained by random factors
+rand <- pv.Z$VCV/apply(pv.Z$VCV,1,sum)
+# Get median values (50%) and 95% quantiles
+apply(rand,2,function(c) quantile(c,probs = c(0.025,0.5,0.975)))
+
+#### calculate I^2 to quantify heterogeneity ####
+## As per Nakagawa & Santos 2012, calculate the different random effect-level I^2's
+# Get the mean value of the variance for all the random effects
+Rand_Var <- apply(rand,2,mean)
+Rand_Var
+#     animal         Authors         SE_Z:SE_Z.units   units 
+#0.013461734     0.023363354     0.961446888     0.001728025
+
+#varA = phylogenetic level variance
+varA <- Rand_Var[1] 
+
+#varS = study level variance
+varS = Rand_Var[2]
+
+#varE = effect-size-specific effect
+varE = Rand_Var[4]
+
+#varM = samling error effect
+varM = Rand_Var[3]
+
+##Total variance equation
+varT = varA + varS + varE + varM 
+
+## study level heterogenity I^2s = varS/varT
+I2s <- varS/varT
+I2s*100
+#  Authors 
+#  2.336335
+
+## species level heterogenity I^2s = varA/varT
+I2u <- varA/varT
+I2u*100
+# animal 
+# 1.346173 
+
+## total heterogeneity
+(I2s*100) + (I2u*100)
+#3.682509
+
+## phylogenetic heritability, phylogenetic signal H2 = varA/varA + varS + varE
+H2 = varA/(varA + varS + varE)
+H2
+# animal 
+#0.3491737
+
+# Proportion of variance explained by random factors
+Sol <- pv.Z$Sol/apply(pv.Z$Sol,1,sum)
+# Get median values (50%) and 95% quantiles
+apply(Sol,2,function(c) quantile(c,probs = c(0.025,0.5,0.975)))
+
+#### Get the prediction interval of the overall effect size ####
+pred_matrix <- predict(pv.Z, interval = "prediction")
+pred_interval <- apply(pred_matrix, 2, mean)
+pred_interval
+#      fit        lwr        upr 
+#0.2647184 -0.8420542  1.3734664
+
+#### Get the posterior mean and 95% CI of the overall effect size ####
+pred_matrix <- predict(pv.Z, interval = "confidence")
+confidence <- apply(pred_matrix, 2, mean)
+confidence
+#       fit        lwr        upr 
+# 0.2564761 -0.1410408  0.6338541
+
+#### publication bias ####
+# getting predictions (raw data - predictions = meta-analytic residuals)
+Precision<-metadata$Weight
+MR<-metadata$Fisher_Z-pred_matrix[1:149]
+zMR<-MR*Precision
+metadata[,c("zMR","Precision")]<-c(zMR,Precision)
+
+# Egger's regression
+Egger<-glm(zMR~Precision,family="gaussian",data=metadata)
+summary(Egger)
+
+#Call:
+#glm(formula = zMR ~ Precision, family = "gaussian", data = metadata)
+
+#Deviance Residuals: 
+#  Min      1Q    Median    3Q      Max  
+#-6.2131  -1.4895  -0.5078   1.1383  13.4286    
+
+#Coefficients:
+#             Estimate Std. Error t value Pr(>|t|)  
+#(Intercept)  1.00562    0.38521   2.611  0.00997 **
+#Precision   -0.15023    0.04587  -3.275  0.00132 **
+#  ---
+#  Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+#(Dispersion parameter for gaussian family taken to be 6.253749)
+
+#Null deviance: 986.39  on 148  degrees of freedom
+#Residual deviance: 919.30  on 147  degrees of freedom
+#AIC: 699.97
+
+#Number of Fisher Scoring iterations: 2
+
+Trim_Fill <- trimfill(MR, metadata$SE_Z)
+Trim_Fill
+
+#Number of studies combined: k = 156 (with 7 added studies)
+
+#                                         95%-CI     z  p-value
+#Random effects model   -0.0488 [-0.1114; 0.0138] -1.53  0.1266
+
+#Quantifying heterogeneity:
+#tau^2 = 0.1214 [0.2165; 0.3778]; tau = 0.3485 [0.4653; 0.6147]
+#I^2 = 89.0% [87.6%; 90.3%]; H = 3.02 [2.84; 3.21]
+
+#Test of heterogeneity:
+#     Q  d.f. p-value
+#1414.78  155 < 0.0001
+
+#Details on meta-analytical method:
+#- Inverse variance method
+#- DerSimonian-Laird estimator for tau^2
+#- Jackson method for confidence interval of tau^2 and tau
+#- Trim-and-fill method to adjust for funnel plot asymmetry
+
+#### Adjusted mean and 95% confidence interval #####
+#              fit               lwr              upr 
+#0.2564761-0.0488   -0.1410408-0.0488 0.6338541-0.0488
+#       0.2076761          -0.1898408        0.5850541
+0.2564761-0.0488
+-0.1410408-0.0488
+0.6338541-0.0488
+
+cols <- rep(0,156)
+for (i in 1:156){
+  if (i > 149){
+    cols[i] <- "black"
+  } else if (metadata$Plasticity[i] == "Plastic"){
+    cols[i] <- "darkturquoise"
+  } else if (metadata$Plasticity[i] == "No"){
+    cols[i] <- "darkorchid4"
+  } 
+}
+
+shapes <- rep(0,156)
+for (i in 1:156){
+  if (i > 149){
+    shapes[i] <- 8
+  } else if (metadata$Vert_Invert[i] == "vertebrate"){
+    shapes[i] <- 15
+  } else if (metadata$Vert_Invert[i] == "invertebrate"){
+    shapes[i] <- 16
+  } 
+}
+
+FTF_plot <- meta::funnel(Trim_Fill, yaxis="invse", xlim = c(-3,3),
+                         xlab = "Fisher Z", ylab = "Inverse SE", 
+                         col = cols, pch = shapes,
+                         level = 0.95, contour = c(0.9, 0.95, 0.99))$col.contour
+#legend
+words <- c("Vertebrate", "Invertebrate",  "Plastic", "Non-Plastic", 
+           "Trim and Fill Points")
+Cols <- c("black", "black", "darkturquoise", "darkorchid4", "black")
+points <- c(15,16,15,15,8)
+ys <- c(20.1,19.3,18.5,17.7,16.9)
+for(i in 1:5){
+  points(x=-2.9, y=ys[i], pch=points[i], col=Cols[i])
+  text(x=-2.9,y=ys[i], labels=words[i], pos=4,cex=.75)
+}
+#Export 8x8
+
+
+#### Medians and 95% Credible Intervals ####
+emmeans(pv.Z, ~ Plasticity, data=metadata, level = 0.95)
+#Plasticity emmean lower.HPD upper.HPD
+#No          0.295  -0.00335     0.582
+#Plastic     0.216  -0.13340     0.523
+Znpla <- 0.282; lnpla <- 0.0398; unpla <- 0.537
+Zpla <- 0.209;  lpla <- -0.0683;  upla <- 0.490
+
+emmeans(pv.Z, ~ Vert_Invert, data = metadata, level = 0.95)
+#Vert_Invert  emmean lower.HPD upper.HPD
+#invertebrate  0.270    -0.171     0.710
+#vertebrate    0.245    -0.139     0.618
+Zin <- 0.270; lin <- -0.171; uin <- 0.710
+Zve <- 0.245; lve <- -0.139; uve <- 0.618
+
+
+#Fisher Z Plot
+plot(NA,xlim=c(-2,2),ylim=c(-0.1,0.7),axes=F,ann=F)
+axis(1)
+#Fisher Z
+#Plastic
+segments(lpla,0.6,upla,0.6);
+points(Zpla,0.6,pch=16,col = "black",xpd=NA)
+#Non-Plastic
+segments(lnpla,0.4,unpla,0.4);
+points(Znpla,0.4,pch=16,col = "black",xpd=NA)
+#Vertebrate
+segments(lve,0.2,uve,0.2);
+points(Zve,0.2,pch=16,col = "black",xpd=NA)
+#Invert
+segments(lin,0,uin,0);
+points(Zin,0,pch=16,col = "black",xpd=NA)
+
+#Add dashed line at 0
+abline(v = 0, lty = 1)
+#Add axis labels
+title(xlab = "Fisher Z")
+text(-2.1,0.6,"Plastic", cex = 0.9, adj = c(0,0))
+text(-2.1,0.4,"Non-Plastic", cex = 0.9, adj = c(0,0))
+text(-2.1,0.2,"Vertebrate", cex = 0.9, adj = c(0,0))
+text(-2.1,0,"Invertebrate", cex = 0.9, adj = c(0,0))
+
+#Export 6x6
+#### Fisher Z with Publication Bias correction ####
+#Fisher Z Plot
+plot(NA,xlim=c(-2,2),ylim=c(-0.1,0.7),axes=F,ann=F)
+axis(1)
+#Fisher Z
+#Plastic
+segments(lpla-0.0488,0.6,upla-0.0488,0.6);
+points(Zpla-0.0488,0.6,pch=16,col = "black",xpd=NA)
+#Non-Plastic
+segments(lnpla-0.0488,0.4,unpla-0.0488,0.4);
+points(Znpla-0.0488,0.4,pch=16,col = "black",xpd=NA)
+#Vert
+segments(lve-0.0488,0.2,uve-0.0488,0.2);
+points(Zve-0.0488,0.2,pch=16,col = "black",xpd=NA)
+#Invert
+segments(lin-0.0488,0,uin-0.0488,0);
+points(Zin-0.0488,0,pch=16,col = "black",xpd=NA)
+
+#Add dashed line at 0
+abline(v = 0, lty = 1)
+#Add axis labels
+title(xlab = "Fisher Z")
+text(-2.1,0.6,"Plastic", cex = 0.9, adj = c(0,0))
+text(-2.1,0.4,"Non-Plastic", cex = 0.9, adj = c(0,0))
+text(-2.1,0.6,"Vertebrate", cex = 0.9, adj = c(0,0))
+text(-2.1,0.4,"Invertebrate", cex = 0.9, adj = c(0,0))
+
+#Export 6x6
+################### THE FOLLOWING MODELS WERE NOT DESCRIBED IN PAPER ####
+################## "BEST" MODEL (vert/invert) ##############
+load("R Files/vert_Z.RDATA")
+
+summary(vert.Z)
+#Iterations = 2500001:4999001
+#Thinning interval  = 1000
+#Sample size  = 2500 
+
+#DIC: -238.1355
+
+#Location effects: Fisher_Z ~ Eu_Pheomelanin - 1 
+#                           post.mean l-95% CI u-95% CI eff.samp pMCMC  
+#Vert_Invertinvertebrate   0.29724 -0.13230  0.72998     2500 0.170  
+#Vert_Invertvertebrate     0.25936 -0.04434  0.60560     2500 0.088 .
+#Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+#Model diagnostics
+plot(vert.Z$Sol)
+autocorr(vert.Z$Sol)
+autocorr(vert.Z$VCV)
+
+xsim <- simulate(vert.Z)
+
+model_test <- data.frame(metadata$Fisher_Z, metadata$Weight, xsim)
+colnames(model_test) <- c("Fisher_Z", "invSE", "sim")
+ggplot() +
+  geom_point(data=model_test, aes(x=Fisher_Z, y=invSE)) +
+  geom_point(data=model_test, aes(x=sim, y=invSE), color="red")
+
+# Proportion of variance explained by random factors
+rand <- vert.Z$VCV/apply(vert.Z$VCV,1,sum)
+# Get median values (50%) and 95% quantiles
+apply(rand,2,function(c) quantile(c,probs = c(0.025,0.5,0.975)))
+
+#### calculate I^2 to quantify heterogeneity ####
+## As per Nakagawa & Santos 2012, calculate the different random effect-level I^2's
+# Get the mean value of the variance for all the random effects
+Rand_Var <- apply(rand,2,mean)
+Rand_Var
+#     animal         Authors         SE_Z:SE_Z.units   units 
+#0.009661749     0.023963123     0.964621051     0.001754078
+
+#varA = phylogenetic level variance
+varA <- Rand_Var[1] 
+
+#varS = study level variance
+varS = Rand_Var[2]
+
+#varE = effect-size-specific effect
+varE = Rand_Var[4]
+
+#varM = samling error effect
+varM = Rand_Var[3]
+
+##Total variance equation
+varT = varA + varS + varE + varM 
+
+## study level heterogeneity I^2s = varS/varT
+I2s <- varS/varT
+I2s*100
+#  Authors 
+#  2.396312
+
+## species level heterogeneity I^2s = varA/varT
+I2u <- varA/varT
+I2u*100
+# animal 
+# 0.9661749
+
+## total heterogeneity
+(I2s*100) + (I2u*100)
+#3.362487 
+
+## phylogenetic heritability, phylogenetic signal H2 = varA/varA + varS + varE
+H2 = varA/(varA + varS + varE)
+H2
+# animal 
+#0.2730931
+
+# Proportion of variance explained by random factors
+Sol <- vert.Z$Sol/apply(vert.Z$Sol,1,sum)
+# Get median values (50%) and 95% quantiles
+apply(Sol,2,function(c) quantile(c,probs = c(0.025,0.5,0.975)))
+
+#### Get the prediction interval of the overall effect size ####
+pred_matrix <- predict(vert.Z, interval = "prediction")
+pred_interval <- apply(pred_matrix, 2, mean)
+pred_interval
+#      fit        lwr        upr 
+#0.2607961 -0.7997447  1.3241824
+
+#### Get the posterior mean and 95% CI of the overall effect size ####
+pred_matrix <- predict(vert.Z, interval = "confidence")
+confidence <- apply(pred_matrix, 2, mean)
+confidence
+#      fit        lwr        upr 
+#0.26114108 -0.04846914  0.61144020 
+
+#### publication bias ####
+# getting predictions (raw data - predictions = meta-analytic residuals)
+Precision<-metadata$Weight
+MR<-metadata$Fisher_Z-pred_matrix[1:149]
+zMR<-MR*Precision
+metadata[,c("zMR","Precision")]<-c(zMR,Precision)
+
+# Egger's regression
+Egger<-glm(zMR~Precision,family="gaussian",data=metadata)
+summary(Egger)
+
+#Call:
+#glm(formula = zMR ~ Precision, family = "gaussian", data = metadata)
+
+#Deviance Residuals: 
+#  Min        1Q    Median      3Q       Max  
+#-6.5861  -1.4792  -0.3826   1.0668  13.5966    
+
+#Coefficients:
+#             Estimate Std. Error t value Pr(>|t|)  
+#(Intercept)  0.85936    0.38540   2.230  0.02728 * 
+#Precision   -0.12918    0.04589  -2.815  0.00555 **
+#  ---
+#  Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+#(Dispersion parameter for gaussian family taken to be 6.259928)
+
+#Null deviance: 969.82  on 148  degrees of freedom
+#Residual deviance: 920.21  on 147  degrees of freedom
+#AIC: 700.12
+
+#Number of Fisher Scoring iterations: 2
+
+#### Since the intercept of Egger's regression is not significant 
+#### there is no publication bias. Trim and fill is only used for 
+#### funnel plot creation
+
+Trim_Fill <- trimfill(MR, metadata$SE_Z)
+Trim_Fill
+
+#Number of studies combined: k = 152 (with 3 added studies)
+
+#                                       95%-CI    z p-value
+#Random effects model -0.0165 [-0.0736; 0.0407] -0.56  0.5725
+
+#Quantifying heterogeneity:
+#tau^2 = 0.0943 [0.1697; 0.3000]; tau = 0.3070 [0.4119; 0.5477]
+#I^2 = 86.6% [84.7%; 88.2%]; H = 2.73 [2.56; 2.91]
+
+#Test of heterogeneity:
+#     Q  d.f.  p-value
+#1123.97  151 < 0.0001
+
+#Details on meta-analytical method:
+#- Inverse variance method
+#- DerSimonian-Laird estimator for tau^2
+#- Jackson method for confidence interval of tau^2 and tau
+#- Trim-and-fill method to adjust for funnel plot asymmetry
+
+cols <- rep(0,154)
+for (i in 1:154){
+  if (i > 150){
+    cols[i] <- "forestgreen"
+  } else if (metadatas$Classification[i] == "carotenoid"){
+    cols[i] <- "orange"
+  } else if (metadatas$Eu_Pheomelanin[i] == "eumelanin"){
+    cols[i] <- "black"
+  } else if (metadatas$Eu_Pheomelanin[i] == "pheomelanin"){
+    cols[i] <- "orangered3"
+  } else if (metadatas$Classification[i] == "unknown"){
+    cols[i] <- "darkorchid4"
+  } else if (metadatas$Classification[i] == "structural"){
+    cols[i] <- "cornflowerblue"
+  } else if (metadatas$Classification[i] == "pteridine"){
+    cols[i] <- "deeppink"
+  } 
+}
+
+shapes <- rep(0,154)
+for (i in 1:154){
+  if (i >= 151){
+    shapes[i] <- 8
+  } else if (metadatas$Vert_Invert[i] == "vertebrate"){
+    shapes[i] <- 20
+  } else if (metadatas$Vert_Invert[i] == "invertebrate"){
+    shapes[i] <- 18
+  } 
+}
+
+FTF_plot <- meta::funnel(Trim_Fill, yaxis="invse", xlim = c(-3,3),
+                         xlab = "Fisher Z", ylab = "Inverse SE", 
+                         col = cols, pch = shapes,
+                         level = 0.95, contour = c(0.9, 0.95, 0.99))$col.contour
+#legend
+words <- c("Carotenoid", "Eumelanin", "Pheomelanin", "Unknown",
+           "Structural", "Pteridine",  "Vertebrate", "Invertebrate", 
+           "Trim and Fill Points")
+Cols <- c("orange","black", "orangered3", "darkorchid4", 
+          "cornflowerblue", "deeppink", "grey50", "grey50", 
+          "forestgreen")
+points <- c(15,15,15,15,15,15,20,18,8)
+ys <- c(20.1,19.3,18.5,17.7,16.9,16.1,15.3,14.5,13.7)
+for(i in 1:8){
+  points(x=-2.9, y=ys[i], pch=points[i], col=Cols[i])
+  text(x=-2.9,y=ys[i], labels=words[i], pos=4,cex=.75)
+}
+#Export 8x8
+
+
+#### Adjusted mean and 95% confidence interval #####
+#              fit               lwr              upr 
+#0.26114108-0.0165 -0.04846914-0.0165 0.61144020-0.0165
+#        0.2446411        -0.06496914         0.5949402
+0.26114108-0.0165
+-0.04846914-0.0165
+0.61144020-0.0165
+
+#### Medians and 95% Credible Intervals ####
+emmeans(vert.Z, ~ Vert_Invert, data=metadata, level = 0.95)
+#Vert_Invert emmean lower.HPD upper.HPD
+#invertebrate  0.296   -0.1323     0.730
+#vertebrate    0.256   -0.0443     0.606
+#Point estimate displayed: median 
+#HPD interval probability: 0.95
+Zi <- 0.296; li <- -0.1323; ui <- 0.730
+Zv <- 0.256; lv <- -0.0443; uv <- 0.606
+
+#Fisher Z Plot
+plot(NA,xlim=c(-2,2),ylim=c(1.3,1.8),axes=F,ann=F)
+axis(1)
+#Fisher Z
+#Vertebrate
+segments(lv,1.6,uv,1.6);
+points(Zv,1.6,pch=16,col = "black",xpd=NA)
+#Invertebrate
+segments(li,1.4,ui,1.4);
+points(Zi,1.4,pch=16,col = "black",xpd=NA)
+
+#Add dashed line at 0
+abline(v = 0, lty = 1)
+#Add axis labels
+title(xlab = "Fisher Z")
+text(-2.1,1.6,"Vertebrate", cex = 0.9, adj = c(0,0))
+text(-2.1,1.4,"Invertebrate", cex = 0.9, adj = c(0,0))
+
+#Export 6x6
+#### Fisher Z with Publication Bias correction ####
+#Fisher Z Plot
+plot(NA,xlim=c(-2,2),ylim=c(0.3,0.7),axes=F,ann=F)
+axis(1)
+#Fisher Z
+#Vert
+segments(lv-0.0165,0.6,uv-0.0165,0.6);
+points(Zv-0.0165,0.6,pch=16,col = "black",xpd=NA)
+#Invert
+segments(li-0.0165,0.4,ui-0.0165,0.4);
+points(Zi-0.0165,0.4,pch=16,col = "black",xpd=NA)
+
+#Add dashed line at 0
+abline(v = 0, lty = 1)
+#Add axis labels
+title(xlab = "Fisher Z")
+text(-2.1,0.6,"Vertebrate", cex = 0.9, adj = c(0,0))
+text(-2.1,0.4,"Invertebrate", cex = 0.9, adj = c(0,0))
 
 #Export 6x6
 ################## "BEST" MODEL (sex) ##############
@@ -2727,33 +2947,13 @@ text(-2.1,-0.4,"Field", cex = 0.9, adj = c(0,0))
 #Export 6x6
  
 ################## Fisher Z with Pub Bias correction subset combined ####
-plot(NA,xlim=c(-2,2),ylim=c(-1.1,1.9),axes=F,ann=F)
+plot(NA,xlim=c(-2,2),ylim=c(-1.1,0.7),axes=F,ann=F)
 axis(1)
 
 #### Random Effects Model
 #Mean
-segments(0.04646076-0.0255,1.8,0.48347851-0.0255,1.8);
-points(0.26002580-0.0255,1.8,pch=16,col = "black",xpd=NA)
-
-#### Mixed: Color Class
-#Carotenoid
-segments(lcar ,1.6,ucar,1.6);
-points(Zcar,1.6,pch=16,col = "black",xpd=NA)
-#Eumelanin
-segments(leu,1.4,ueu,1.4);
-points(Zeu,1.4,pch=16,col = "black",xpd=NA)
-#Pheomelanin
-segments(lph,1.2,uph,1.2);
-points(Zph,1.2,pch=16,col = "black",xpd=NA)
-#Structural 
-segments(lst,1,ust,1);
-points(Zst,1,pch=16,col = "black",xpd=NA)
-#Unknown
-segments(lun,0.8,uun,0.8);
-points(Zun,0.8,pch=16,col = "black",xpd=NA)
-#Mean Class Model
-segments(-0.084,0.6,0.620,0.6);
-points(0.273,0.6,pch=16,col = "black",xpd=NA)
+segments(0.04646076-0.0255,0.6,0.48347851-0.0255,0.6);
+points(0.26002580-0.0255,0.6,pch=16,col = "black",xpd=NA)
 
 #### Mixed: Plasticity
 #Plastic
@@ -2784,20 +2984,12 @@ segments(-0.190,-1,0.585,-1);
 points(0.208,-1,pch=16,col = "black",xpd=NA)
 
 #Add dashed line at 0
-abline(v = 0, lty = 1)
-abline(h = 1.7, lty = 1)
 abline(h = 0.5, lty = 1)
 abline(h = -0.1, lty = 1)
 
 #Add axis labels
 title(xlab = "Fisher Z")
-text(-2.1,1.8,"Random Effects Model*", cex = 0.9, adj = c(0,0), font = 2)
-text(-2.1,1.6,"Carotenoid", cex = 0.9, adj = c(0,0))
-text(-2.1,1.4,"Eumelanin*", cex = 0.9, adj = c(0,0), font = 2)
-text(-2.1,1.2,"Pheomelanin", cex = 0.9, adj = c(0,0))
-text(-2.1,1,"Structural", cex = 0.9, adj = c(0,0))
-text(-2.1,0.8,"Unknown*", cex = 0.9, adj = c(0,0), font = 2)
-text(-2.1,0.6,"Overall Model", cex = 0.9, adj = c(0,0))
+text(-2.1,0.6,"Random Effects Model*", cex = 0.9, adj = c(0,0), font = 2)
 text(-2.1,0.4,"Plastic", cex = 0.9, adj = c(0,0))
 text(-2.1,0.2,"Non-Plastic*", cex = 0.9, adj = c(0,0))
 text(-2.1,0,"Overall Model", cex = 0.9, adj = c(0,0))
@@ -2808,7 +3000,7 @@ text(-2.1,-0.8,"Invertebrate", cex = 0.9, adj = c(0,0))
 text(-2.1,-1,"Overall Model", cex = 0.9, adj = c(0,0))
 
 #Export 8x8
-################## Fisher Z with Publication Bias correction Combined ####
+################## Fisher Z with Publication Bias correction all combined ####
 plot(NA,xlim=c(-2,2),ylim=c(-5.1,1.7),axes=F,ann=F)
 axis(1)
 #### Mixed: Color Class
@@ -2990,26 +3182,26 @@ for (i in 1:length(order$Study)){
 colsa <- rep(0,length(order$Classification))
 for (i in 1:length(order$Classification)){
   if (order$Classification[i] == "carotenoid"){
-    colsa[i] <- "orange"
+    colsa[i] <- "darkorange"
   } else if (order$Eu_Pheomelanin[i] == "eumelanin"){
     colsa[i] <- "black"
   } else if (order$Eu_Pheomelanin[i] == "pheomelanin"){
-    colsa[i] <- "orangered3"
+    colsa[i] <- "tan4"
   } else if (order$Classification[i] == "unknown"){
-    colsa[i] <- "darkorchid4"
+    colsa[i] <- "slateblue4"
   }  else if (order$Classification[i] == "pteridine"){
-    colsa[i] <- "deeppink"
+    colsa[i] <- "turquoise4"
   } else if (order$Classification[i] == "structural"){
-    colsa[i] <- "cornflowerblue"
+    colsa[i] <- "violet"
   } 
 }
 
 shapesa <- rep(0,length(order$Plasticity))
 for (i in 1:length(order$Vert_Invert)){
   if (order$Plasticity[i] == "Plastic"){
-    shapesa[i] <- 20
+    shapesa[i] <- 15
   } else if (order$Plasticity[i] == "No"){
-    shapesa[i] <- 18
+    shapesa[i] <- 16
   } 
 }
 
@@ -3025,21 +3217,34 @@ for (i in 1:length(order$Study)){
 #Export 15x10
 
 ################## Fisher Z by Phylogeny ####
-plot(NA,xlim=c(-5,5),ylim=c(0,300),axes=F,ann=F)
+plot(NA,xlim=c(-5,5),ylim=c(1.9,300),axes=F,ann=F)
 axis(1)
-polygon(x = c(-5.1,-5.1,4.5,4.5), y = c(2,8,8,2), col = alpha("gray", 0.8), density = NA)
-polygon(x = c(-5.1,-5.1,4.5,4.5), y = c(12,14,14,12), col = alpha("gray", 0.8), density = NA)
-polygon(x = c(-5.1,-5.1,4.5,4.5), y = c(16,40,40,16), col = alpha("gray", 0.8), density = NA)
-polygon(x = c(-5.1,-5.1,4.5,4.5), y = c(150,196,196,150), col = alpha("gray", 0.8), density = NA)
-polygon(x = c(-5.1,-5.1,4.5,4.5), y = c(220,302,302,220), col = alpha("gray", 0.8), density = NA)
+polygon(x = c(-4,-4,4.25,4.25), y = c(2,8,8,2), col = alpha("gray", 0.8), density = NA)
+polygon(x = c(-4,-4,4.25,4.25), y = c(12,14,14,12), col = alpha("gray", 0.8), density = NA)
+polygon(x = c(-4,-4,4.25,4.25), y = c(16,40,40,16), col = alpha("gray", 0.8), density = NA)
+polygon(x = c(-4,-4,4.25,4.25), y = c(150,196,196,150), col = alpha("gray", 0.8), density = NA)
+polygon(x = c(-4,-4,4.25,4.25), y = c(220,302,302,220), col = alpha("gray", 0.8), density = NA)
 
 abline(v=0)
 for (i in 1:length(order$Study)){
   segments(order$lci[i],i*2,order$uci[i],i*2);
   points(order$Fisher_Z[i],i*2,pch=shapesa[i],col = colsa[i],xpd=NA)
-  text(-5.1, i*2, order$Study[i], cex = 0.5, adj = c(0,0))
+  text(-4, i*2, order$Study[i], cex = 0.5, adj = c(0,0))
   text(3.5, i*2, order$Class[i], cex= 0.5, adj = c(0,0), font = 2)
 }
+
+#legend
+words <- c("Carotenoid", "Eumelanin", "Pheomelanin", "Structural", 
+           "Pteridine", "Unknown", "Plastic", "Non-Plastic")
+Cols <- c("darkorange","black", "tan4", "violet", 
+          "turquoise4", "slateblue4", "black", "black")
+points <- c(15,15,15,15,15,15,15,16)
+ys <- c(140,135,130,125,120,115,110,105)
+for(i in 1:8){
+  points(x=3.5, y=ys[i], pch=points[i], col=Cols[i])
+  text(x=3.5,y=ys[i], labels=words[i], pos=4, cex=.5, font = 2)
+}
+
 
 #Export 15x10
 
