@@ -361,6 +361,15 @@ season.Z <- MCMCglmm(Fisher_Z ~ Season - 1,
 season.Z$DIC
 #-230.2013
 
+###### Run the model with Age only ####
+age.Z <- MCMCglmm(Fisher_Z ~ Age - 1, 
+                    random = ~animal + Authors + us(SE_Z):units, 
+                    data=metadata, pedigree = tree,
+                    nitt = 5000000, thin = 1000, burnin = 2500000, 
+                    prior = prior.ex2)
+age.Z$DIC
+#-236.7384
+
 ###### Run the model with Class and Vert/Invert ####
 #Run the model
 cv.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Vert_Invert - 1, 
@@ -397,18 +406,65 @@ csea.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Season - 1,
 csea.Z$DIC
 #-226.9562
 
-###### Run the model with Plasticity and Sex ####
+###### Run the model with Class and Age ####
 #Run the model
-ps.Z <- MCMCglmm(Fisher_Z ~ Plasticity + Sex - 1, 
+ca.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Age - 1, 
+                   random = ~animal + Authors + us(SE_Z):units, 
+                   data=metadata, pedigree = tree, 
+                   nitt = 5000000, thin = 1000, burnin = 2500000, 
+                   prior = prior.ex2)
+ca.Z$DIC
+#-234.4946
+
+###### Run the model with Plasticity and Age ####
+#Run the model
+pa.Z <- MCMCglmm(Fisher_Z ~ Plasticity + Age - 1, 
                  random = ~animal + Authors + us(SE_Z):units, 
                  data=metadata, pedigree = tree, 
                  nitt = 5000000, thin = 1000, burnin = 2500000, 
                  prior = prior.ex2)
-ps.Z$DIC
-#-237.1174
+pa.Z$DIC
+#-236.5053
 
-#Save the model for later
-#save(ps.Z, file = "ps_Z.RDATA")
+###### Run the model with Sex and Age ####
+#Run the model
+sa.Z <- MCMCglmm(Fisher_Z ~ Sex + Age - 1, 
+                 random = ~animal + Authors + us(SE_Z):units, 
+                 data=metadata, pedigree = tree, 
+                 nitt = 5000000, thin = 1000, burnin = 2500000, 
+                 prior = prior.ex2)
+sa.Z$DIC
+#-235.4912
+
+###### Run the model with Vert/Invert and Age ####
+#Run the model
+verta.Z <- MCMCglmm(Fisher_Z ~ Vert_Invert + Age - 1, 
+                 random = ~animal + Authors + us(SE_Z):units, 
+                 data=metadata, pedigree = tree, 
+                 nitt = 5000000, thin = 1000, burnin = 2500000, 
+                 prior = prior.ex2)
+verta.Z$DIC
+#-236.2052
+
+###### Run the model with Location and Age ####
+#Run the model
+la.Z <- MCMCglmm(Fisher_Z ~ Location + Age - 1, 
+                    random = ~animal + Authors + us(SE_Z):units, 
+                    data=metadata, pedigree = tree, 
+                    nitt = 5000000, thin = 1000, burnin = 2500000, 
+                    prior = prior.ex2)
+la.Z$DIC
+#-236.9072
+
+###### Run the model with Season and Age ####
+#Run the model
+seaa.Z <- MCMCglmm(Fisher_Z ~ Season + Age - 1, 
+                    random = ~animal + Authors + us(SE_Z):units, 
+                    data=metadata, pedigree = tree, 
+                    nitt = 5000000, thin = 1000, burnin = 2500000, 
+                    prior = prior.ex2)
+seaa.Z$DIC
+#-230.7736
 
 ###### Run the model with Class and Plasticity ####
 #Run the model
@@ -429,6 +485,19 @@ cs.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Sex - 1,
                  prior = prior.ex2)
 cs.Z$DIC
 #-233.7354
+
+###### Run the model with Plasticity and Sex ####
+#Run the model
+ps.Z <- MCMCglmm(Fisher_Z ~ Plasticity + Sex - 1, 
+                 random = ~animal + Authors + us(SE_Z):units, 
+                 data=metadata, pedigree = tree, 
+                 nitt = 5000000, thin = 1000, burnin = 2500000, 
+                 prior = prior.ex2)
+ps.Z$DIC
+#-237.1174
+
+#Save the model for later
+#save(ps.Z, file = "ps_Z.RDATA")
 
 ###### Run the model with Plasticity and Vert/Invert ####
 #Run the model
@@ -547,7 +616,7 @@ cpv.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Plasticity + Vert_Invert -1,
 cpv.Z$DIC
 #-235.3293
 
-###### Run the model with Class, Sex, and Season ####
+###### Run the model Class, Sex, and Season ####
 #Run the model
 cssea.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Sex + Season - 1, 
                   random = ~animal + Authors + us(SE_Z):units, 
@@ -626,6 +695,96 @@ clsea.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Location + Season -1,
                     prior = prior.ex2)
 clsea.Z$DIC
 #-229.3553
+
+###### Run the model Class, Plasticity, and Age ####
+#Run the model
+cpa.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Plasticity + Age -1, 
+                    random = ~animal + Authors + us(SE_Z):units, 
+                    data=metadata, pedigree = tree, 
+                    nitt = 2000000, thin = 1000, burnin = 1000000, 
+                    prior = prior.ex2)
+cpa.Z$DIC
+#-234.7057
+
+###### Run the model Class, Sex, and Age ####
+#Run the model
+csa.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Sex + Age -1, 
+                  random = ~animal + Authors + us(SE_Z):units, 
+                  data=metadata, pedigree = tree, 
+                  nitt = 2000000, thin = 1000, burnin = 1000000, 
+                  prior = prior.ex2)
+csa.Z$DIC
+#-233.6389
+
+###### Run the model Class, Vert/Invert, and Age ####
+#Run the model
+cva.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Vert_Invert + Age -1, 
+                  random = ~animal + Authors + us(SE_Z):units, 
+                  data=metadata, pedigree = tree, 
+                  nitt = 2000000, thin = 1000, burnin = 1000000, 
+                  prior = prior.ex2)
+cva.Z$DIC
+#-232.0138
+
+###### Run the model Class, Location, and Age ####
+#Run the model
+cla.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Location + Age -1, 
+                  random = ~animal + Authors + us(SE_Z):units, 
+                  data=metadata, pedigree = tree, 
+                  nitt = 2000000, thin = 1000, burnin = 1000000, 
+                  prior = prior.ex2)
+cla.Z$DIC
+#-234.6989
+
+###### Run the model Class, Season, and Age ####
+#Run the model
+cseaa.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Season + Age -1, 
+                  random = ~animal + Authors + us(SE_Z):units, 
+                  data=metadata, pedigree = tree, 
+                  nitt = 2000000, thin = 1000, burnin = 1000000, 
+                  prior = prior.ex2)
+cseaa.Z$DIC
+#-227.7061
+
+###### Run the model Plasticity, Sex, and Age ####
+#Run the model
+psa.Z <- MCMCglmm(Fisher_Z ~ Plasticity + Sex + Age -1, 
+                    random = ~animal + Authors + us(SE_Z):units, 
+                    data=metadata, pedigree = tree, 
+                    nitt = 2000000, thin = 1000, burnin = 1000000, 
+                    prior = prior.ex2)
+psa.Z$DIC
+#-234.6685
+
+###### Run the model Plasticity, Vert/Invert, and Age ####
+#Run the model
+pva.Z <- MCMCglmm(Fisher_Z ~ Plasticity + Vert_Invert + Age -1, 
+                  random = ~animal + Authors + us(SE_Z):units, 
+                  data=metadata, pedigree = tree, 
+                  nitt = 2000000, thin = 1000, burnin = 1000000, 
+                  prior = prior.ex2)
+pva.Z$DIC
+#-235.7323
+
+###### Run the model Plasticity, Location, and Age ####
+#Run the model
+pla.Z <- MCMCglmm(Fisher_Z ~ Plasticity + Location + Age -1, 
+                  random = ~animal + Authors + us(SE_Z):units, 
+                  data=metadata, pedigree = tree, 
+                  nitt = 5000000, thin = 1000, burnin = 2500000, 
+                  prior = prior.ex2)
+pla.Z$DIC
+#-236.8264
+
+###### Run the model Plasticity, Season, and Age ####
+#Run the model
+pseaa.Z <- MCMCglmm(Fisher_Z ~ Plasticity + Season + Age -1, 
+                  random = ~animal + Authors + us(SE_Z):units, 
+                  data=metadata, pedigree = tree, 
+                  nitt = 2000000, thin = 1000, burnin = 1000000, 
+                  prior = prior.ex2)
+pseaa.Z$DIC
+#-229.492
 
 ###### Run the model Plasticity, Sex, and Vert/Invert ####
 #Run the model
@@ -717,6 +876,66 @@ slsea.Z <- MCMCglmm(Fisher_Z ~ Sex + Location + Season -1,
 slsea.Z$DIC
 #-230.5738
 
+###### Run the model Sex, Vert/Invert, and Age ####
+#Run the model
+sva.Z <- MCMCglmm(Fisher_Z ~ Sex + Vert_Invert + Age -1, 
+                    random = ~animal + Authors + us(SE_Z):units, 
+                    data=metadata, pedigree = tree, 
+                    nitt = 2000000, thin = 1000, burnin = 1000000, 
+                    prior = prior.ex2)
+sva.Z$DIC
+#-233.9941
+
+###### Run the model Sex, Location, and Age ####
+#Run the model
+sla.Z <- MCMCglmm(Fisher_Z ~ Sex + Location + Age -1, 
+                  random = ~animal + Authors + us(SE_Z):units, 
+                  data=metadata, pedigree = tree, 
+                  nitt = 2000000, thin = 1000, burnin = 1000000, 
+                  prior = prior.ex2)
+sla.Z$DIC
+#-235.7001
+
+###### Run the model Sex, Season, and Age ####
+#Run the model
+sseaa.Z <- MCMCglmm(Fisher_Z ~ Sex + Season + Age -1, 
+                  random = ~animal + Authors + us(SE_Z):units, 
+                  data=metadata, pedigree = tree, 
+                  nitt = 2000000, thin = 1000, burnin = 1000000, 
+                  prior = prior.ex2)
+sseaa.Z$DIC
+#-231.1525
+
+###### Run the model Vert/Invert, Location, and Age ####
+#Run the model
+vla.Z <- MCMCglmm(Fisher_Z ~ Location + Vert_Invert + Age -1, 
+                  random = ~animal + Authors + us(SE_Z):units, 
+                  data=metadata, pedigree = tree, 
+                  nitt = 5000000, thin = 1000, burnin = 2500000, 
+                  prior = prior.ex2)
+vla.Z$DIC
+#-236.0379
+
+###### Run the model Season, Vert/Invert, and Age ####
+#Run the model
+seava.Z <- MCMCglmm(Fisher_Z ~ Season + Vert_Invert + Age -1, 
+                  random = ~animal + Authors + us(SE_Z):units, 
+                  data=metadata, pedigree = tree, 
+                  nitt = 2000000, thin = 1000, burnin = 1000000, 
+                  prior = prior.ex2)
+seava.Z$DIC
+#-230.5236
+
+###### Run the model Location, Season, and Age ####
+#Run the model
+lseaa.Z <- MCMCglmm(Fisher_Z ~ Location + Season + Age -1, 
+                  random = ~animal + Authors + us(SE_Z):units, 
+                  data=metadata, pedigree = tree, 
+                  nitt = 2000000, thin = 1000, burnin = 1000000, 
+                  prior = prior.ex2)
+lseaa.Z$DIC
+#-231.9506
+
 ###### Run the model Vert/Invert, Location, and Season ####
 #Run the model
 vlsea.Z <- MCMCglmm(Fisher_Z ~ Vert_Invert + Location + Season -1, 
@@ -769,7 +988,7 @@ ebyp.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Sex + Plasticity
 ebyp.Z$DIC
 #-226.7052
 
-###### Mixed Effects Model Class, PLasticity, Sex, and Class x Sex ####
+###### Mixed Effects Model Class, Plasticity, Sex, and Class x Sex ####
 #Run the model
 ebys.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Sex + Plasticity
                  + Sex*Eu_Pheomelanin - 1, 
