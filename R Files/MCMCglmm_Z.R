@@ -3166,7 +3166,7 @@ text(-2.1,-0.4,"Field", cex = 0.9, adj = c(0,0))
 #Export 6x6
  
 ################## Fisher Z with Pub Bias correction subset combined ####
-plot(NA,xlim=c(-2,2),ylim=c(-1.1,0.7),axes=F,ann=F)
+plot(NA,xlim=c(-2,2),ylim=c(-0.1,0.7),axes=F,ann=F)
 axis(1)
 
 #### Random Effects Model
@@ -3202,9 +3202,10 @@ points(Zin-0.0488,-0.8,pch=16,col = "black",xpd=NA)
 segments(-0.190,-1,0.585,-1);
 points(0.208,-1,pch=16,col = "black",xpd=NA)
 
-#Add dashed line at 0
+#Add line at 0 and separate models
 abline(h = 0.5, lty = 1)
 abline(h = -0.1, lty = 1)
+abline(v = 0, lty = 1)
 
 #Add axis labels
 title(xlab = "Fisher Z")
@@ -3218,7 +3219,7 @@ text(-2.1,-0.6,"Vertebrate", cex = 0.9, adj = c(0,0))
 text(-2.1,-0.8,"Invertebrate", cex = 0.9, adj = c(0,0))
 text(-2.1,-1,"Overall Model", cex = 0.9, adj = c(0,0))
 
-#Export 8x8
+#Export 8x8 (6x6 for plasticity and random only)
 ################## Fisher Z with Publication Bias correction all combined ####
 plot(NA,xlim=c(-2,2),ylim=c(-5.1,1.7),axes=F,ann=F)
 axis(1)
