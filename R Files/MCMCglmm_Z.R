@@ -1239,9 +1239,12 @@ p_significance(color.Z$Sol, threshold = 0)
 
 
 #Fisher Z Plot
-plot(NA,xlim=c(-2,2),ylim=c(0.7,1.8),axes=F,ann=F)
+plot(NA,xlim=c(-2,2),ylim=c(0.7,1.9),axes=F,ann=F)
 axis(1)
 #Fisher Z
+#Overall Model
+segments(-0.08404796,1.8,0.62026270,1.8)
+points(0.27294299,1.8,pch=16,col="black",xpd=NA)
 #Carotenoid
 segments(lcar,1.6,ucar,1.6);
 points(Zcar,1.6,pch=16,col = "black",xpd=NA)
@@ -1262,8 +1265,9 @@ points(Zun,0.8,pch=16,col = "black",xpd=NA)
 abline(v = 0, lty = 1)
 #Add axis labels
 title(xlab = "Fisher Z")
+text(-2.1,1.8,"Overall Model", cex = 0.9, adj = c(0,0))
 text(-2.1,1.6,"Carotenoid", cex = 0.9, adj = c(0,0))
-text(-2.1,1.4,"Eumelanin", cex = 0.9, adj = c(0,0))
+text(-2.1,1.4,"Eumelanin*", cex = 0.9, adj = c(0,0), font=2)
 text(-2.1,1.2,"Pheomelanin", cex = 0.9, adj = c(0,0))
 text(-2.1,1,"Structural", cex = 0.9, adj = c(0,0))
 text(-2.1,0.8,"Unknown", cex = 0.9, adj = c(0,0))
