@@ -10,6 +10,7 @@ library(ggplot2)
 library(emmeans)
 library(bayestestR)
 library(meta)
+library(DescTools)
 
 #### Phylogeny ####
 #First, we need to read in the tree and root it to convert it from an 
@@ -230,6 +231,13 @@ Trim_Fill
 0.04646076-0.0255
 0.48347851-0.0255
 
+#Mean and 95% CI as rho rather than Fisher Z
+FisherZInv(0.26002580)
+FisherZInv(0.04646076)
+FisherZInv(0.48347851)
+FisherZInv(0.26002580-0.0255)
+FisherZInv(0.04646076-0.0255)
+FisherZInv(0.48347851-0.0255)
 
 cols <- rep("black",154)
 
@@ -1435,7 +1443,17 @@ Trim_Fill
 0.26224001-0.0545
 0.00348823-0.0545
 0.52142155-0.0545
-  
+
+#Means and 95%CI in rho rather than Fisher Z
+FisherZInv(0.26224001)
+FisherZInv(0.00348823)
+FisherZInv(0.52142155)
+FisherZInv(0.26224001-0.0545)
+FisherZInv(0.00348823-0.0545)
+FisherZInv(0.52142155-0.0545)
+
+
+
 cols <- rep("black",157)
 shapes <- rep(0,157)
 for (i in 1:157){
@@ -3169,6 +3187,53 @@ text(-2.1,-0.4,"Field", cex = 0.9, adj = c(0,0))
 
 #Export 6x6
  
+######## Rho Figure #######
+plot(NA,xlim=c(-1.1,1.1),ylim=c(-0.1,0.8),axes=F,ann=F)
+axis(1)
+
+#### Random Effects Model
+#Mean No correction
+segments(FisherZInv(0.04646076),0.7,FisherZInv(0.48347851),0.7);
+points(FisherZInv(0.26002580),0.7,pch=16,col = "black",xpd=NA)
+
+#### Random Effects Model
+#Mean with correction
+segments(FisherZInv(0.04646076-0.0255),0.6,FisherZInv(0.48347851-0.0255),0.6);
+points(FisherZInv(0.26002580-0.0255),0.6,pch=15,col = "grey75",xpd=NA)
+
+#### Mixed: Plasticity
+#Plastic no correction
+segments(FisherZInv(lpl),0.5,FisherZInv(upl),0.5);
+points(FisherZInv(Zpl),0.5,pch=16,col = "black",xpd=NA)
+#Non-Plastic no correction
+segments(FisherZInv(lnpl),0.3,FisherZInv(unpl),0.3);
+points(FisherZInv(Znpl),0.3,pch=16,col = "black",xpd=NA)
+#Mean Plasticity Model no correction
+segments(FisherZInv(-0.051),0.1,FisherZInv(0.467),0.1);
+points(FisherZInv(0.207),0.1,pch=16,col = "black",xpd=NA)
+
+#### Mixed: Plasticity
+#Plastic with correction
+segments(FisherZInv(lpl-0.0545),0.4,FisherZInv(upl-0.0545),0.4);
+points(FisherZInv(Zpl-0.0545),0.4,pch=15,col = "grey75",xpd=NA)
+#Non-Plastic with correction
+segments(FisherZInv(lnpl-0.0545),0.2,FisherZInv(unpl-0.0545),0.2);
+points(FisherZInv(Znpl-0.0545),0.2,pch=15,col = "grey75",xpd=NA)
+#Mean Plasticity Model with correction
+segments(FisherZInv(-0.051-0.0545),0,FisherZInv(0.467-0.0545),0);
+points(FisherZInv(0.207-0.0545),0,pch=15,col = "grey75",xpd=NA)
+
+#Add line at 0 and separate models
+abline(h = 0.55, lty = 1)
+abline(v = 0, lty = 1)
+
+#Add axis labels
+title(xlab = "Rho")
+text(-1,0.65,"Random Effects Model*", cex = 0.9, adj = c(0,0), font = 2)
+text(-1,0.45,"Plastic", cex = 0.9, adj = c(0,0))
+text(-1,0.25,"Non-Plastic*", cex = 0.9, adj = c(0,0))
+text(-1,0.05,"Overall Model", cex = 0.9, adj = c(0,0))
+
 ################## Fisher Z with Pub Bias correction subset combined ####
 plot(NA,xlim=c(-2,2),ylim=c(-0.1,0.7),axes=F,ann=F)
 axis(1)
