@@ -3209,8 +3209,8 @@ points(FisherZInv(Zpl),0.5,pch=16,col = "black",xpd=NA)
 segments(FisherZInv(lnpl),0.3,FisherZInv(unpl),0.3);
 points(FisherZInv(Znpl),0.3,pch=16,col = "black",xpd=NA)
 #Mean Plasticity Model no correction
-segments(FisherZInv(-0.051),0.1,FisherZInv(0.467),0.1);
-points(FisherZInv(0.207),0.1,pch=16,col = "black",xpd=NA)
+segments(0.003,0.1,0.479,0.1);
+points(0.256,0.1,pch=16,col = "black",xpd=NA)
 
 #### Mixed: Plasticity
 #Plastic with correction
@@ -3220,19 +3220,19 @@ points(FisherZInv(Zpl-0.0545),0.4,pch=15,col = "grey75",xpd=NA)
 segments(FisherZInv(lnpl-0.0545),0.2,FisherZInv(unpl-0.0545),0.2);
 points(FisherZInv(Znpl-0.0545),0.2,pch=15,col = "grey75",xpd=NA)
 #Mean Plasticity Model with correction
-segments(FisherZInv(-0.051-0.0545),0,FisherZInv(0.467-0.0545),0);
-points(FisherZInv(0.207-0.0545),0,pch=15,col = "grey75",xpd=NA)
+segments(-0.051,0,0.436,0);
+points(0.205,0,pch=15,col = "grey75",xpd=NA)
 
 #Add line at 0 and separate models
 abline(h = 0.55, lty = 1)
-abline(v = 0, lty = 1)
+abline(v = 0, lty = 2)
 
 #Add axis labels
-title(xlab = "Rho")
+title(xlab = "Correlation Coefficient")
 text(-1,0.65,"Random Effects Model*", cex = 0.9, adj = c(0,0), font = 2)
 text(-1,0.45,"Plastic", cex = 0.9, adj = c(0,0))
 text(-1,0.25,"Non-Plastic*", cex = 0.9, adj = c(0,0))
-text(-1,0.05,"Overall Model", cex = 0.9, adj = c(0,0))
+text(-1,0.05,"Overall Model*", cex = 0.9, adj = c(0,0))
 
 ################## Fisher Z with Pub Bias correction subset combined ####
 plot(NA,xlim=c(-2,2),ylim=c(-0.1,0.7),axes=F,ann=F)
