@@ -3506,20 +3506,30 @@ for (i in 1:length(order$Study)){
 #Export 15x10
 
 ################## Fisher Z by Phylogeny ####
-plot(NA,xlim=c(-5,5),ylim=c(1.9,300),axes=F,ann=F)
+order <- read.csv("Excel Sheets/species.csv")
+order <- cbind(order,rep(0,length(order$Study)),rep(0,length(order$Study)))
+names(order)[41] <- "lci"
+names(order)[42] <- "uci"
+
+for (i in 1:length(order$Study)){
+  order$uci[i] <- order$rho[i] + 1.96*order$SE_r[i]
+  order$lci[i] <- order$rho[i] - 1.96*order$SE_r[i]
+}
+
+plot(NA,xlim=c(-2,2),ylim=c(1.9,300),axes=F,ann=F)
 axis(1)
-polygon(x = c(-4,-4,4.25,4.25), y = c(2,8,8,2), col = alpha("gray", 0.8), density = NA)
-polygon(x = c(-4,-4,4.25,4.25), y = c(12,14,14,12), col = alpha("gray", 0.8), density = NA)
-polygon(x = c(-4,-4,4.25,4.25), y = c(16,40,40,16), col = alpha("gray", 0.8), density = NA)
-polygon(x = c(-4,-4,4.25,4.25), y = c(150,196,196,150), col = alpha("gray", 0.8), density = NA)
-polygon(x = c(-4,-4,4.25,4.25), y = c(220,302,302,220), col = alpha("gray", 0.8), density = NA)
+polygon(x = c(-2,-2,2,2), y = c(2,8,8,2), col = alpha("gray", 0.8), density = NA)
+polygon(x = c(-2,-2,2,2), y = c(12,14,14,12), col = alpha("gray", 0.8), density = NA)
+polygon(x = c(-2,-2,2,2), y = c(16,40,40,16), col = alpha("gray", 0.8), density = NA)
+polygon(x = c(-2,-2,2,2), y = c(150,196,196,150), col = alpha("gray", 0.8), density = NA)
+polygon(x = c(-2,-2,2,2), y = c(220,302,302,220), col = alpha("gray", 0.8), density = NA)
 
 abline(v=0)
 for (i in 1:length(order$Study)){
-  segments(order$lci[i],i*2,order$uci[i],i*2);
-  points(order$Fisher_Z[i],i*2,pch=shapesa[i],col = colsa[i],xpd=NA)
-  text(-4, i*2, order$Study[i], cex = 0.5, adj = c(0,0))
-  text(3.5, i*2, order$Class[i], cex= 0.5, adj = c(0,0), font = 2)
+  segments((order$lci[i]),i*2,(order$uci[i]),i*2);
+  points((order$rho[i]),i*2,pch=shapesa[i],col = colsa[i],xpd=NA)
+  text(-2, i*2, order$Study[i], cex = 0.5, adj = c(0,0))
+  text(1.75, i*2, order$Class[i], cex= 0.5, adj = c(0,0), font = 2)
 }
 
 #legend
@@ -3527,13 +3537,13 @@ words <- c("Carotenoid", "Eumelanin", "Pheomelanin", "Structural",
            "Pteridine", "Unknown", "Plastic", "Non-Plastic")
 Cols <- c("darkorange","black", "tan4", "violet", 
           "turquoise4", "slateblue4", "black", "black")
-points <- c(15,15,15,15,15,15,15,16)
+points <- c(17,17,17,17,17,17,15,16)
 ys <- c(140,135,130,125,120,115,110,105)
 for(i in 1:8){
-  points(x=3.5, y=ys[i], pch=points[i], col=Cols[i])
-  text(x=3.5,y=ys[i], labels=words[i], pos=4, cex=.5, font = 2)
+  points(x=1.75, y=ys[i], pch=points[i], col=Cols[i])
+  text(x=1.75,y=ys[i], labels=words[i], pos=4, cex=.5, font = 2)
 }
+title(xlab = "Correlation Coefficient")
 
-
-#Export 15x10
+#Export 12x15
 
