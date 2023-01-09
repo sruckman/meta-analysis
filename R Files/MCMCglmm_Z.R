@@ -258,7 +258,21 @@ for(i in 1:2){
 #Export 8x8
 
 
-###### Run the model without species ####
+###### Run the model without tree ####
+priors <- list(G = list(G1 = list(V = 1, nu = 0.02, alpha.mu = 0.4, alpha.V = 0.5), 
+                        G2 = list(V = 1, nu = 0.02, alpha.mu = 0.4, alpha.V = 0.5),
+                        G3 = list(V = 1, nu = 0.02, alpha.mu = 0.4, alpha.V = 0.5)), 
+               R = list(V=1, nu=0.02))
+
+tree.Z <- MCMCglmm(Fisher_Z ~ 1, 
+                      random = ~ animal + Authors + us(SE_Z):units, 
+                      data=metadata, 
+                      nitt = 2000000, thin = 1000, burnin = 1000000, 
+                      prior = priors)
+tree.Z$DIC
+#-239.4622
+
+###### Run the model without tree and species ####
 priors <- list(G = list(G1 = list(V = 1, nu = 0.02, alpha.mu = 0.4, alpha.V = 0.5), 
                            G2 = list(V = 1, nu = 0.02, alpha.mu = 0.4, alpha.V = 0.5)), 
                   R = list(V=1, nu=0.02))
