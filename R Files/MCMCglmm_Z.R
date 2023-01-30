@@ -3201,7 +3201,7 @@ text(-2.1,-0.4,"Field", cex = 0.9, adj = c(0,0))
 
 #Export 6x6
  
-######## Rho Figure #######
+######## Rho Figure (Figure 2)#######
 plot(NA,xlim=c(-1.1,1.1),ylim=c(-0.1,0.8),axes=F,ann=F)
 axis(1)
 
@@ -3213,7 +3213,7 @@ points(FisherZInv(0.26002580),0.7,pch=16,col = "black",xpd=NA)
 #### Random Effects Model
 #Mean with correction
 segments(FisherZInv(0.04646076-0.0255),0.6,FisherZInv(0.48347851-0.0255),0.6);
-points(FisherZInv(0.26002580-0.0255),0.6,pch=15,col = "grey75",xpd=NA)
+points(FisherZInv(0.26002580-0.0255),0.6,pch=15,col = "black",xpd=NA)
 
 #### Mixed: Plasticity
 #Plastic no correction
@@ -3229,13 +3229,13 @@ points(0.256,0.1,pch=16,col = "black",xpd=NA)
 #### Mixed: Plasticity
 #Plastic with correction
 segments(FisherZInv(lpl-0.0545),0.4,FisherZInv(upl-0.0545),0.4);
-points(FisherZInv(Zpl-0.0545),0.4,pch=15,col = "grey75",xpd=NA)
+points(FisherZInv(Zpl-0.0545),0.4,pch=15,col = "black",xpd=NA)
 #Non-Plastic with correction
 segments(FisherZInv(lnpl-0.0545),0.2,FisherZInv(unpl-0.0545),0.2);
-points(FisherZInv(Znpl-0.0545),0.2,pch=15,col = "grey75",xpd=NA)
+points(FisherZInv(Znpl-0.0545),0.2,pch=15,col = "black",xpd=NA)
 #Mean Plasticity Model with correction
 segments(-0.051,0,0.436,0);
-points(0.205,0,pch=15,col = "grey75",xpd=NA)
+points(0.205,0,pch=15,col = "black",xpd=NA)
 
 #Add line at 0 and separate models
 abline(h = 0.55, lty = 1)
@@ -3243,10 +3243,26 @@ abline(v = 0, lty = 2)
 
 #Add axis labels
 title(xlab = "Correlation Coefficient")
-text(-1,0.65,"Random Effects Model*", cex = 0.9, adj = c(0,0), font = 2)
+text(-1,0.65,"Random Effects Model", cex = 0.9, adj = c(0,0))
+text(FisherZInv(0.26002580),0.7,"*", cex = 1, adj = c(0.5,0))
+text(FisherZInv(0.26002580-0.0255),0.6,"*", cex = 1, adj = c(0.5,0))
 text(-1,0.45,"Plastic", cex = 0.9, adj = c(0,0))
-text(-1,0.25,"Non-Plastic*", cex = 0.9, adj = c(0,0))
-text(-1,0.05,"Overall Model*", cex = 0.9, adj = c(0,0))
+text(-1,0.25,"Non-Plastic", cex = 0.9, adj = c(0,0))
+text(FisherZInv(Znpl),0.3,"*", cex = 1, adj = c(0.4,0))
+text(-1,0.05,"Overall Model", cex = 0.9, adj = c(0,0))
+text(0.256,0.1,"*", cex = 1, adj = c(0.4,0))
+
+#legend
+words <- c("Before Correction", "After Correction")
+Cols <- c("black", "black")
+points <- c(16,15)
+ys <- c(0.8, 0.75)
+for(i in 1:2){
+  points(x=0.7, y=ys[i], pch=points[i], col=Cols[i])
+  text(x=0.7,y=ys[i], labels=words[i], pos=4, cex=.75, font = 2)
+}
+
+#Export 7x7
 
 ################## Fisher Z with Pub Bias correction subset combined ####
 plot(NA,xlim=c(-2,2),ylim=c(-0.1,0.7),axes=F,ann=F)
@@ -3532,8 +3548,7 @@ for (i in 1:length(order$Study)){
 
 plot(NA,xlim=c(-2,2),ylim=c(1.9,300),axes=F,ann=F)
 axis(1)
-polygon(x = c(-2,-2,2,2), y = c(2,8,8,2), col = alpha("gray", 0.8), density = NA)
-polygon(x = c(-2,-2,2,2), y = c(12,14,14,12), col = alpha("gray", 0.8), density = NA)
+polygon(x = c(-2,-2,2,2), y = c(8,14,14,8), col = alpha("gray", 0.8), density = NA)
 polygon(x = c(-2,-2,2,2), y = c(16,40,40,16), col = alpha("gray", 0.8), density = NA)
 polygon(x = c(-2,-2,2,2), y = c(150,196,196,150), col = alpha("gray", 0.8), density = NA)
 polygon(x = c(-2,-2,2,2), y = c(220,302,302,220), col = alpha("gray", 0.8), density = NA)
@@ -3543,7 +3558,7 @@ for (i in 1:length(order$Study)){
   segments((order$lci[i]),i*2,(order$uci[i]),i*2);
   points((order$rho[i]),i*2,pch=shapesa[i],col = colsa[i],xpd=NA)
   text(-2, i*2, order$Study[i], cex = 0.5, adj = c(0,0))
-  text(1.75, i*2, order$Class[i], cex= 0.5, adj = c(0,0), font = 2)
+  text(1.7, i*2, order$Class[i], cex= 0.6, adj = c(0,0), font = 2)
 }
 
 #legend
@@ -3551,13 +3566,14 @@ words <- c("Carotenoid", "Eumelanin", "Pheomelanin", "Structural",
            "Pteridine", "Unknown", "Plastic", "Non-Plastic")
 Cols <- c("darkorange","black", "tan4", "violet", 
           "turquoise4", "slateblue4", "black", "black")
-points <- c(17,17,17,17,17,17,15,16)
-ys <- c(140,135,130,125,120,115,110,105)
+points <- c(15,15,15,15,15,15,15,16)
+ys <- c(140,135,130,125,120,115,105,100)
 for(i in 1:8){
   points(x=1.75, y=ys[i], pch=points[i], col=Cols[i])
   text(x=1.75,y=ys[i], labels=words[i], pos=4, cex=.5, font = 2)
 }
 title(xlab = "Correlation Coefficient")
-
+text(1.75,145,cex = 0.5, "Colors:", font = 2)
+text(1.75, 110, cex = 0.5, "Shapes:", font = 2)
 #Export 12x15
 
