@@ -4,19 +4,19 @@ setwd("C:\\Users\\sarah\\Documents\\GitHub\\meta-analysis")
 library(DescTools)
 
 #Effect Sizes will be in rho and Fisher Z values
-metadat <- read.csv("Excel Sheets/meta data2.csv", header=T)
+metadat <- read.csv("Excel Sheets/meta_data.csv", header=T)
 
 #Add and rename column to hold effect sizes calculations and standard errors
 metadat <- cbind(metadat,rep(0,length(metadat$Study)),rep(0,length(metadat$Study)),
                  rep(0,length(metadat$Study)),rep(0,length(metadat$Study)),
                  rep(0,length(metadat$Study)))
-names(metadat)[35] <- "rho"
-names(metadat)[36] <- "SE_r"
-names(metadat)[37] <- "Fisher_Z"
-names(metadat)[38] <- "SE_Z"
-names(metadat)[39] <- "Weight"
+names(metadat)[42] <- "rho"
+names(metadat)[43] <- "SE_r"
+names(metadat)[44] <- "Fisher_Z"
+names(metadat)[45] <- "SE_Z"
+names(metadat)[46] <- "Weight"
 
-#Calculate rho effect size
+#Calculate rho effect size based on test statsitics given
 for (i in 1:length(metadat$Study)){
   if (metadat$Stat.Test[i] == "t"){
     rpb <- sqrt((metadat$Test.Statistic[i]^2)/(metadat$Test.Statistic[i]^2 + metadat$df1[i]))
@@ -42,6 +42,8 @@ for (i in 1:length(metadat$Study)){
 }
 
 #Calculate Fisher Z, SE for both r and Fisher Z, and Weight
+#if values are greater than 1 then we will use 0.99
+#if valuse are less than -1 then we will use -0.99
 for (i in 1:length(metadat$Study)){
   if (metadat$rho[i] < 1 && metadat$rho[i] > -1){
     metadat$SE_r[i] <- (sqrt(1-metadat$rho[i]^2))/(sqrt(metadat$Sample.Size[i]-2))
@@ -73,4 +75,4 @@ for (i in 1:length(metadat$Study)){
 missingrow <- subset(missingrow, missingrow != 0)
 missingrow
 
-write.csv(metadat, "meta_complete_data.csv")
+write.csv(metadat, "meta_complete_data2.csv")
