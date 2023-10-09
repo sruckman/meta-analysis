@@ -1008,6 +1008,328 @@ for(i in 1:2){
 #Export 8x8
 
 
+###### Run the model subset by age uncontrolled removed ####
+#Subset data by removing papers that did not control for social rank
+agecon <- metadatas[metadatas$Age_Controlled != "uncontrolled",]
+
+#load the model
+load("R Files/rage_Z.RDATA")
+
+rage.Z <- MCMCglmm(Fisher_Z ~ 1, random = ~animal + Authors + us(SE_Z):units,
+                      data=agecon, pedigree = tree, 
+                      nitt = 5000000, thin = 1000, burnin = 2500000, 
+                      prior = prior.ex)
+rage.Z$DIC
+#13.23489
+
+#Save the model
+#save(rage.Z, file = "rage_Z.RDATA")
+
+#### calculate I^2 to quantify heterogeneity ####
+# Proportion of variance explained by random factors
+rand <- rage.Z$VCV/apply(rage.Z$VCV,1,sum)
+# Get median values (50%) and 95% quantiles
+apply(rand,2,function(c) quantile(c,probs = c(0.025,0.5,0.975)))
+## As per Nakagawa & Santos 2012, calculate the different random effect-level I^2's
+# Get the mean value of the variance for all the random effects
+Rand_Var <- apply(rand,2,mean)
+Rand_Var
+#     animal         Authors SE_Z:SE_Z.units           units 
+#0.1584632       0.3573036       0.3483839       0.1358493 
+
+#varA = phylogenetic level variance
+varA <- Rand_Var[1] 
+
+#varS = study level variance
+varS = Rand_Var[2]
+
+#varE = effect-size-specific effect
+varE = Rand_Var[4]
+
+#varM = samlng error effect
+varM = Rand_Var[3]
+
+##Total variance equation
+varT = varA + varS + varE + varM 
+
+## study level heterogenity I^2s = varS/varT
+I2s <- varS/varT
+I2s*100
+#  Authors 
+# 35.73036    
+
+## species level heterogenity I^2s = varA/varT
+I2u <- varA/varT
+I2u*100
+# animal 
+# 15.8463
+
+## total heterogeneity percent
+(I2s*100)+(I2u*100)
+#51.57668 
+
+## phylogenetic heritability, phylogenetic signal H2 = varA/varA + varS + varE
+H2 = varA/(varA + varS + varE)
+H2
+# animal 
+#0.2431849
+
+#### Get the posterior mean and 95% CI of the overall effect size ####
+pred_matrix <- predict(rage.Z, interval = "confidence")
+confidence <- apply(pred_matrix, 2, mean)
+confidence
+#      fit        lwr        upr 
+#0.2598076 -0.4301027  1.0783987  
+
+#### publication bias ####
+# getting predictions (raw data - predictions = meta-analytic residuals)
+Precision<-agecon$Weight
+MR<-agecon$Fisher_Z-pred_matrix[1:25]
+zMR<-MR*Precision
+agecon[,c("zMR","Precision")]<-c(zMR,Precision)
+
+# Egger's regression
+Egger<-glm(zMR~Precision,family="gaussian",data=agecon)
+summary(Egger)
+
+#Coefficients:
+#             Estimate Std. Error t value Pr(>|t|)  
+#(Intercept)   0.5188     1.6742   0.310    0.759
+#Precision    -0.1730     0.2526  -0.685    0.500
+#  ---
+#  Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Trim_Fill <- meta::trimfill(MR, agecon$SE_Z)
+Trim_Fill
+
+#Number of studies combined: k = 25 (with 0 added studies)
+
+#                                         95%-CI     z  p-value
+#Random effects model  -0.0871 [-0.3202; 0.1459] -0.73  0.4638
+
+
+
+FTF_plot <- meta::funnel(Trim_Fill, yaxis="invse", xlim = c(-3,3),
+                         xlab = "Fisher Z", ylab = "Inverse SE", 
+                         col = "black", pch = 16,
+                         level = 0.95, contour = c(0.9, 0.95, 0.99))$col.contour
+#Export 8x8
+
+
+###### Run the model subset by age uncontrolled removed and color class####
+
+#load the model
+load("R Files/ragec_Z.RDATA")
+
+ragec.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin - 1, random = ~animal + Authors + us(SE_Z):units,
+                   data=agecon, pedigree = tree, 
+                   nitt = 5000000, thin = 1000, burnin = 2500000, 
+                   prior = prior.ex)
+ragec.Z$DIC
+#12.20796
+
+#Save the model
+#save(ragec.Z, file = "ragec_Z.RDATA")
+
+#### calculate I^2 to quantify heterogeneity ####
+# Proportion of variance explained by random factors
+rand <- ragec.Z$VCV/apply(ragec.Z$VCV,1,sum)
+# Get median values (50%) and 95% quantiles
+apply(rand,2,function(c) quantile(c,probs = c(0.025,0.5,0.975)))
+## As per Nakagawa & Santos 2012, calculate the different random effect-level I^2's
+# Get the mean value of the variance for all the random effects
+Rand_Var <- apply(rand,2,mean)
+Rand_Var
+#     animal         Authors SE_Z:SE_Z.units           units 
+#0.2907266       0.3401662       0.2801957       0.0889115 
+
+#varA = phylogenetic level variance
+varA <- Rand_Var[1] 
+
+#varS = study level variance
+varS = Rand_Var[2]
+
+#varE = effect-size-specific effect
+varE = Rand_Var[4]
+
+#varM = samlng error effect
+varM = Rand_Var[3]
+
+##Total variance equation
+varT = varA + varS + varE + varM 
+
+## study level heterogenity I^2s = varS/varT
+I2s <- varS/varT
+I2s*100
+#  Authors 
+# 34.01662    
+
+## species level heterogenity I^2s = varA/varT
+I2u <- varA/varT
+I2u*100
+# animal 
+# 29.07266
+
+## total heterogeneity percent
+(I2s*100)+(I2u*100)
+#51.57668 
+
+## phylogenetic heritability, phylogenetic signal H2 = varA/varA + varS + varE
+H2 = varA/(varA + varS + varE)
+H2
+# animal 
+#0.4038967
+
+#### Get the posterior mean and 95% CI of the overall effect size ####
+pred_matrix <- predict(ragec.Z, interval = "confidence")
+confidence <- apply(pred_matrix, 2, mean)
+confidence
+#      fit        lwr        upr 
+#0.2891451 -1.2252288  1.8440485  
+
+#### publication bias ####
+# getting predictions (raw data - predictions = meta-analytic residuals)
+Precision<-agecon$Weight
+MR<-agecon$Fisher_Z-pred_matrix[1:25]
+zMR<-MR*Precision
+agecon[,c("zMR","Precision")]<-c(zMR,Precision)
+
+# Egger's regression
+Egger<-glm(zMR~Precision,family="gaussian",data=agecon)
+summary(Egger)
+
+#Coefficients:
+#             Estimate Std. Error t value Pr(>|t|)  
+#(Intercept)   1.5899     1.6885   0.942    0.356
+#Precision    -0.3957     0.2548  -1.553    0.134
+#  ---
+#  Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Trim_Fill <- meta::trimfill(MR, agecon$SE_Z)
+Trim_Fill
+
+#Number of studies combined: k = 25 (with 0 added studies)
+
+#                                         95%-CI     z  p-value
+#Random effects model  -0.1161 [-0.3516; 0.1195] -0.97  0.3342
+
+
+
+FTF_plot <- meta::funnel(Trim_Fill, yaxis="invse", xlim = c(-3,3),
+                         xlab = "Fisher Z", ylab = "Inverse SE", 
+                         col = "black", pch = 16,
+                         level = 0.95, contour = c(0.9, 0.95, 0.99))$col.contour
+#Export 8x8
+
+
+###### Run the model subset by age, social rank, and condition uncontrolled removed and color class####
+raccon <- rankcon[rankcon$Age_Controlled != "uncontrolled",]
+raccon <- raccon[raccon$Condition != "None measured",]
+
+#load the model
+load("R Files/rankagecond_Z.RDATA")
+
+rankagecond.Z <- MCMCglmm(Fisher_Z ~ 1, random = ~animal + Authors + us(SE_Z):units,
+                    data=raccon, pedigree = tree, 
+                    nitt = 5000000, thin = 1000, burnin = 2500000, 
+                    prior = prior.ex)
+rankagecond.Z$DIC
+#-4.435873
+
+#Save the model
+save(rankagecond.Z, file = "rankagecond_Z.RDATA")
+
+#### calculate I^2 to quantify heterogeneity ####
+# Proportion of variance explained by random factors
+rand <- rankagecond.Z$VCV/apply(rankagecond.Z$VCV,1,sum)
+# Get median values (50%) and 95% quantiles
+apply(rand,2,function(c) quantile(c,probs = c(0.025,0.5,0.975)))
+## As per Nakagawa & Santos 2012, calculate the different random effect-level I^2's
+# Get the mean value of the variance for all the random effects
+Rand_Var <- apply(rand,2,mean)
+Rand_Var
+#     animal         Authors SE_Z:SE_Z.units           units 
+#0.10442912      0.05032449      0.57606732      0.26917907
+
+#varA = phylogenetic level variance
+varA <- Rand_Var[1] 
+
+#varS = study level variance
+varS = Rand_Var[2]
+
+#varE = effect-size-specific effect
+varE = Rand_Var[4]
+
+#varM = samlng error effect
+varM = Rand_Var[3]
+
+##Total variance equation
+varT = varA + varS + varE + varM 
+
+## study level heterogenity I^2s = varS/varT
+I2s <- varS/varT
+I2s*100
+#  Authors 
+# 5.032449     
+
+## species level heterogenity I^2s = varA/varT
+I2u <- varA/varT
+I2u*100
+# animal 
+# 10.44291
+
+## total heterogeneity percent
+(I2s*100)+(I2u*100)
+#15.47536 
+
+## phylogenetic heritability, phylogenetic signal H2 = varA/varA + varS + varE
+H2 = varA/(varA + varS + varE)
+H2
+# animal 
+#0.2463342
+
+#### Get the posterior mean and 95% CI of the overall effect size ####
+pred_matrix <- predict(rankagecond.Z, interval = "confidence")
+confidence <- apply(pred_matrix, 2, mean)
+confidence
+#      fit        lwr        upr 
+#0.1769460 -0.1807661  0.5232827  
+
+#### publication bias ####
+# getting predictions (raw data - predictions = meta-analytic residuals)
+Precision<-raccon$Weight
+MR<-raccon$Fisher_Z-pred_matrix[1:15]
+zMR<-MR*Precision
+raccon[,c("zMR","Precision")]<-c(zMR,Precision)
+
+# Egger's regression
+Egger<-glm(zMR~Precision,family="gaussian",data=raccon)
+summary(Egger)
+
+#Coefficients:
+#             Estimate Std. Error t value Pr(>|t|)  
+#(Intercept)   1.6627     0.7944   2.093   0.0565 .
+#Precision    -0.3286     0.1379  -2.383   0.0331 *
+#  ---
+#  Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Trim_Fill <- meta::trimfill(MR, raccon$SE_Z)
+Trim_Fill
+
+#Number of studies combined: k = 18 (with 3 added studies)
+
+#                                         95%-CI     z  p-value
+#Random effects model  -0.0926 [-0.2012; 0.0159] -1.67  0.0945
+
+
+
+FTF_plot <- meta::funnel(Trim_Fill, yaxis="invse", xlim = c(-3,3),
+                         xlab = "Fisher Z", ylab = "Inverse SE", 
+                         col = "black", pch = 16,
+                         level = 0.95, contour = c(0.9, 0.95, 0.99))$col.contour
+#Export 8x8
+
+
 ################ Mixed Effects Model and Tests for the Best Model ####
 ###### Run the model with Class only ####
 prior.ex2 <- list(G = list(G1 = list(V = 1, nu = 0.02, alpha.mu = 0.4, alpha.V = 0.5), 
@@ -1250,6 +1572,17 @@ text(-2.1,1,"Structural", cex = 0.9, adj = c(0,0))
 
 
 #Export 6x6
+###### Run the model with Age Controlled only ####
+#Run the model
+acon.Z <- MCMCglmm(Fisher_Z ~ Age_Controlled - 1, 
+                         random = ~animal + Authors + us(SE_Z):units, 
+                         data=metadata, pedigree = tree, 
+                         nitt = 5000000, thin = 1000, burnin = 2500000, 
+                         prior = prior.ex2)
+acon.Z$DIC
+#-256.5689
+
+
 ###### Run the model with Plasticity only ####
 #Run the model
 plasticity.Z <- MCMCglmm(Fisher_Z ~ Plasticity - 1, 
@@ -1262,6 +1595,38 @@ plasticity.Z$DIC
 
 #Save the model for later
 #save(plasticity.Z, file = "plasticity_Z.RDATA")
+
+###### Run the model with Time Lag Analysis ####
+#Run the model with linear term
+year.Z <- MCMCglmm(Fisher_Z ~ Publication.Year - 1, 
+                         random = ~animal + Authors + us(SE_Z):units, 
+                         data=metadatas, pedigree = tree, 
+                         nitt = 5000000, thin = 1000, burnin = 2500000, 
+                         prior = prior.ex2)
+year.Z$DIC
+#-263.6191
+
+pred_matrix <- predict(year.Z, interval = "confidence")
+confidence <- apply(pred_matrix, 2, mean)
+confidence
+#0.25081365 0.01858821 0.46312191 
+
+#Save the model for later
+save(year.Z, file = "yearlinear_Z.RDATA")
+
+#Run the model with quadratic term
+metadatas$Publication.Year2 <- metadatas$Publication.Year^2
+
+year2.Z <- MCMCglmm(Fisher_Z ~ Publication.Year + Publication.Year2 - 1, 
+                   random = ~animal + Authors + us(SE_Z):units, 
+                   data=metadatas, pedigree = tree, 
+                   nitt = 5000000, thin = 1000, burnin = 2500000, 
+                   prior = prior.ex2)
+year2.Z$DIC
+#
+
+#Save the model for later
+#save(yearquad.Z, file = "yearquad_Z.RDATA")
 
 ###### Run the model with Sex only ####
 #Run the model
