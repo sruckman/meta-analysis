@@ -1343,15 +1343,28 @@ class.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin - 1,
                      nitt = 5000000, thin = 1000, burnin = 2500000, 
                      prior = prior.ex2)
 class.Z$DIC
-#-258.4055
+#-253.01
 
 #Save the model for later
-#save(class.Z, file = "class_Z.RDATA")
+save(class.Z, file = "class_Z.RDATA")
 
 ###### Run the model with Class No Unknowns coded as Eumelanic ####
 metadat <- metadata
 metadat$Eu_Pheomelanin <- ifelse(metadata$Eu_Pheomelanin =="unknown", yes = "eumelanin", no = metadata$Eu_Pheomelanin)
 unique(metadat$Eu_Pheomelanin)
+
+randnounkn <- MCMCglmm(Fisher_Z ~ 1, random = ~animal + Authors + us(SE_Z):units,
+                       data=metadat, pedigree = tree, 
+                       nitt = 5000000, thin = 1000, burnin = 2500000, 
+                       prior = prior.ex)
+randnounkn$DIC  
+#-258.9389
+
+pred_matrix <- predict(randnounkn, interval = "prediction")
+pred_interval <- apply(pred_matrix, 2, mean)
+pred_interval
+#      fit        lwr        upr 
+#0.2502108 -0.7282278  1.2379403
 
 cnounk.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin - 1, 
                     random = ~animal + Authors + us(SE_Z):units, 
@@ -1598,7 +1611,7 @@ plasticity.Z$DIC
 
 ###### Run the model with Time Lag Analysis ####
 #Run the model with linear term
-year.Z <- MCMCglmm(Fisher_Z ~ Publication.Year - 1, 
+year.Z <- MCMCglmm(Fisher_Z ~ as.numeric(Publication.Year) - 1, 
                          random = ~animal + Authors + us(SE_Z):units, 
                          data=metadatas, pedigree = tree, 
                          nitt = 5000000, thin = 1000, burnin = 2500000, 
@@ -1612,21 +1625,31 @@ confidence
 #0.25081365 0.01858821 0.46312191 
 
 #Save the model for later
-save(year.Z, file = "yearlinear_Z.RDATA")
+#save(year.Z, file = "yearlinear_Z.RDATA")
 
 #Run the model with quadratic term
 metadatas$Publication.Year2 <- metadatas$Publication.Year^2
 
-year2.Z <- MCMCglmm(Fisher_Z ~ Publication.Year + Publication.Year2 - 1, 
+prior.y   <- list(G = list(G1 = list(V = 1, nu = 1, alpha.mu = 0.2, alpha.V = 0.5), 
+                           G2 = list(V = 1, nu = 1, alpha.mu = 0.2, alpha.V = 0.5),
+                           G3 = list(V = 1, nu = 1, alpha.mu = 0.2, alpha.V = 0.5)), 
+                  R = list(V=1, nu=1))
+
+year2.Z <- MCMCglmm(as.numeric(Fisher_Z) ~ as.numeric(Publication.Year2) - 1, 
                    random = ~animal + Authors + us(SE_Z):units, 
                    data=metadatas, pedigree = tree, 
                    nitt = 5000000, thin = 1000, burnin = 2500000, 
-                   prior = prior.ex2)
+                   prior = prior.y)
 year2.Z$DIC
-#
+#52.36772
 
 #Save the model for later
-#save(yearquad.Z, file = "yearquad_Z.RDATA")
+save(year2.Z, file = "yearquad_Z.RDATA")
+
+pred_matrix <- predict(year2.Z, interval = "confidence")
+confidence <- apply(pred_matrix, 2, mean)
+confidence
+#0.265441702 -0.002931191  0.590576417
 
 ###### Run the model with Sex only ####
 #Run the model
@@ -1677,7 +1700,7 @@ season.Z <- MCMCglmm(Fisher_Z ~ Season - 1,
 season.Z$DIC
 #-253.636
 
-###### Run the model with Age only ####
+###### Run the model with Life Stage only ####
 age.Z <- MCMCglmm(Fisher_Z ~ Age - 1, 
                     random = ~animal + Authors + us(SE_Z):units, 
                     data=metadata, pedigree = tree,
@@ -1782,7 +1805,7 @@ csea.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Season - 1,
 csea.Z$DIC
 #-251.133
 
-###### Run the model with Class and Age ####
+###### Run the model with Class and Life Stage ####
 #Run the model
 ca.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Age - 1, 
                    random = ~animal + Authors + us(SE_Z):units, 
@@ -1792,7 +1815,7 @@ ca.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Age - 1,
 ca.Z$DIC
 #-257.8608
 
-###### Run the model with Plasticity and Age ####
+###### Run the model with Plasticity and Life Stage ####
 #Run the model
 pa.Z <- MCMCglmm(Fisher_Z ~ Plasticity + Age - 1, 
                  random = ~animal + Authors + us(SE_Z):units, 
@@ -1802,7 +1825,7 @@ pa.Z <- MCMCglmm(Fisher_Z ~ Plasticity + Age - 1,
 pa.Z$DIC
 #-259.9565
 
-###### Run the model with Sex and Age ####
+###### Run the model with Sex and Life Stage ####
 #Run the model
 sa.Z <- MCMCglmm(Fisher_Z ~ Sex + Age - 1, 
                  random = ~animal + Authors + us(SE_Z):units, 
@@ -1812,7 +1835,7 @@ sa.Z <- MCMCglmm(Fisher_Z ~ Sex + Age - 1,
 sa.Z$DIC
 #-259.0631
 
-###### Run the model with Vert/Invert and Age ####
+###### Run the model with Vert/Invert and Life Stage ####
 #Run the model
 verta.Z <- MCMCglmm(Fisher_Z ~ Vert_Invert + Age - 1, 
                  random = ~animal + Authors + us(SE_Z):units, 
@@ -1822,7 +1845,7 @@ verta.Z <- MCMCglmm(Fisher_Z ~ Vert_Invert + Age - 1,
 verta.Z$DIC
 #-259.2963
 
-###### Run the model with Location and Age ####
+###### Run the model with Location and Life Stage ####
 #Run the model
 la.Z <- MCMCglmm(Fisher_Z ~ Location + Age - 1, 
                     random = ~animal + Authors + us(SE_Z):units, 
@@ -1832,7 +1855,7 @@ la.Z <- MCMCglmm(Fisher_Z ~ Location + Age - 1,
 la.Z$DIC
 #-259.6543
 
-###### Run the model with Season and Age ####
+###### Run the model with Season and Life Stage ####
 #Run the model
 seaa.Z <- MCMCglmm(Fisher_Z ~ Season + Age - 1, 
                     random = ~animal + Authors + us(SE_Z):units, 
@@ -2066,7 +2089,7 @@ asea.Z <- MCMCglmm(Fisher_Z ~ Aggression + Season - 1,
 asea.Z$DIC
 #-254.7479
 
-###### Run the model with Agg Measures and Age ####
+###### Run the model with Agg Measures and Life Stage ####
 aage.Z <- MCMCglmm(Fisher_Z ~ Aggression + Age - 1, 
                    random = ~animal + Authors + us(SE_Z):units, 
                    data=metadata, pedigree = tree,
@@ -2321,7 +2344,7 @@ seacond.Z <- MCMCglmm(Fisher_Z ~ Season + Condition - 1,
 seacond.Z$DIC
 #-253.2819
 
-###### Run the model with Age and Geography ####
+###### Run the model with Life Stage and Geography ####
 ag.Z <- MCMCglmm(Fisher_Z ~ Age + Geographic - 1, 
                  random = ~animal + Authors + us(SE_Z):units, 
                  data=metadata, pedigree = tree,
@@ -2331,7 +2354,7 @@ ag.Z <- MCMCglmm(Fisher_Z ~ Age + Geographic - 1,
 ag.Z$DIC
 #-259.8103
 
-###### Run the model with Age and Social Rank ####
+###### Run the model with Life Stage and Social Rank ####
 asoc.Z <- MCMCglmm(Fisher_Z ~ Age + Social_Rank_Controlled - 1, 
                    random = ~animal + Authors + us(SE_Z):units, 
                    data=metadata, pedigree = tree,
@@ -2341,7 +2364,7 @@ asoc.Z <- MCMCglmm(Fisher_Z ~ Age + Social_Rank_Controlled - 1,
 asoc.Z$DIC
 #-256.9167
 
-###### Run the model with Age and Obs vs Exp ####
+###### Run the model with Life Stage and Obs vs Exp ####
 aob.Z <- MCMCglmm(Fisher_Z ~ Age + Obs_vs_Exp - 1, 
                   random = ~animal + Authors + us(SE_Z):units, 
                   data=metadata, pedigree = tree,
@@ -2351,7 +2374,7 @@ aob.Z <- MCMCglmm(Fisher_Z ~ Age + Obs_vs_Exp - 1,
 aob.Z$DIC
 #-260.1696
 
-###### Run the model with Age and Condition ####
+###### Run the model with Life Stage and Condition ####
 acond.Z <- MCMCglmm(Fisher_Z ~ Age + Condition - 1, 
                     random = ~animal + Authors + us(SE_Z):units, 
                     data=metadata, pedigree = tree,
@@ -2421,6 +2444,147 @@ obscond.Z <- MCMCglmm(Fisher_Z ~ Obs_vs_Exp + Condition - 1,
 obscond.Z$DIC
 #-259.735
 
+###### Run the model with Age controlled and Color ####
+agc.Z <- MCMCglmm(Fisher_Z ~ Age_Controlled + Eu_Pheomelanin - 1, 
+                    random = ~animal + Authors + us(SE_Z):units, 
+                    data=metadata, pedigree = tree,
+                    nitt = 2000000, thin = 1000, burnin = 1000000, 
+                    prior = prior.ex2)
+agc.Z$DIC
+#-252.7446
+
+###### Run the model with Age controlled and Agg Measure ####
+agagg.Z <- MCMCglmm(Fisher_Z ~ Age_Controlled + Aggression - 1, 
+                  random = ~animal + Authors + us(SE_Z):units, 
+                  data=metadata, pedigree = tree,
+                  nitt = 2000000, thin = 1000, burnin = 1000000, 
+                  prior = prior.ex2)
+agagg.Z$DIC
+#-256.9074
+
+###### Run the model with Age controlled and Plasticity ####
+agp.Z <- MCMCglmm(Fisher_Z ~ Age_Controlled + Plasticity - 1, 
+                    random = ~animal + Authors + us(SE_Z):units, 
+                    data=metadata, pedigree = tree,
+                    nitt = 2000000, thin = 1000, burnin = 1000000, 
+                    prior = prior.ex2)
+agp.Z$DIC
+#-255.3949
+
+###### Run the model with Age controlled and Sex ####
+ags.Z <- MCMCglmm(Fisher_Z ~ Age_Controlled + Sex - 1, 
+                    random = ~animal + Authors + us(SE_Z):units, 
+                    data=metadata, pedigree = tree,
+                    nitt = 2000000, thin = 1000, burnin = 1000000, 
+                    prior = prior.ex2)
+ags.Z$DIC
+#-254.9366
+
+###### Run the model with Age controlled and Vert_Invert ####
+agv.Z <- MCMCglmm(Fisher_Z ~ Age_Controlled + Vert_Invert - 1, 
+                  random = ~animal + Authors + us(SE_Z):units, 
+                  data=metadata, pedigree = tree,
+                  nitt = 2000000, thin = 1000, burnin = 1000000, 
+                  prior = prior.ex2)
+agv.Z$DIC
+#-256.3538
+
+###### Run the model with Age controlled and Location ####
+agl.Z <- MCMCglmm(Fisher_Z ~ Age_Controlled + Location - 1, 
+                  random = ~animal + Authors + us(SE_Z):units, 
+                  data=metadata, pedigree = tree,
+                  nitt = 2000000, thin = 1000, burnin = 1000000, 
+                  prior = prior.ex2)
+agl.Z$DIC
+#-255.7213
+
+###### Run the model with Age controlled and Season ####
+agsea.Z <- MCMCglmm(Fisher_Z ~ Age_Controlled + Season - 1, 
+                  random = ~animal + Authors + us(SE_Z):units, 
+                  data=metadata, pedigree = tree,
+                  nitt = 2000000, thin = 1000, burnin = 1000000, 
+                  prior = prior.ex2)
+agsea.Z$DIC
+#-248.6002
+
+###### Run the model with Age controlled and Life Stage ####
+agage.Z <- MCMCglmm(Fisher_Z ~ Age_Controlled + Age - 1, 
+                    random = ~animal + Authors + us(SE_Z):units, 
+                    data=metadata, pedigree = tree,
+                    nitt = 2000000, thin = 1000, burnin = 1000000, 
+                    prior = prior.ex2)
+agage.Z$DIC
+#-255.4617
+
+###### Run the model with Age controlled and Geography ####
+aggeo.Z <- MCMCglmm(Fisher_Z ~ Age_Controlled + Geographic - 1, 
+                    random = ~animal + Authors + us(SE_Z):units, 
+                    data=metadata, pedigree = tree,
+                    nitt = 2000000, thin = 1000, burnin = 1000000, 
+                    prior = prior.ex2)
+aggeo.Z$DIC
+#-255.1007
+
+###### Run the model with Age controlled and Social Rank ####
+agsoc.Z <- MCMCglmm(Fisher_Z ~ Age_Controlled + Social_Rank_Controlled - 1, 
+                    random = ~animal + Authors + us(SE_Z):units, 
+                    data=metadata, pedigree = tree,
+                    nitt = 2000000, thin = 1000, burnin = 1000000, 
+                    prior = prior.ex2)
+agsoc.Z$DIC
+#-252.4422
+
+###### Run the model with Age controlled and Obs vs. Exp ####
+agobs.Z <- MCMCglmm(Fisher_Z ~ Age_Controlled + Obs_vs_Exp - 1, 
+                    random = ~animal + Authors + us(SE_Z):units, 
+                    data=metadata, pedigree = tree,
+                    nitt = 2000000, thin = 1000, burnin = 1000000, 
+                    prior = prior.ex2)
+agobs.Z$DIC
+#-255.7944
+
+###### Run the model with Age controlled and Condition ####
+agcon.Z <- MCMCglmm(Fisher_Z ~ Age_Controlled + Obs_vs_Exp - 1, 
+                    random = ~animal + Authors + us(SE_Z):units, 
+                    data=metadata, pedigree = tree,
+                    nitt = 2000000, thin = 1000, burnin = 1000000, 
+                    prior = prior.ex2)
+agcon.Z$DIC
+#-256.1426
+
+###### Mixed Effects Model Plasticity, Sex, and Plasticity x Sex ####
+#Run the model
+pxs.Z <- MCMCglmm(Fisher_Z ~ Sex + Plasticity + Sex*Plasticity - 1, 
+                  random = ~animal + Authors + us(SE_Z):units, 
+                  data=metadata, pedigree = tree, 
+                  nitt = 2000000, thin = 1000, burnin = 1000000, 
+                  prior = prior.ex2)
+pxs.Z$DIC
+#-253.2273
+
+###### Mixed Effects Model Class, Plasticity, and Class x Plasticity ####
+#Run the model
+ebyp.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Plasticity 
+                   + Eu_Pheomelanin*Plasticity - 1, 
+                   random = ~animal + Authors + us(SE_Z):units, 
+                   data=metadata, pedigree = tree, 
+                   nitt = 2000000, thin = 1000, burnin = 1000000, 
+                   prior = prior.ex2)
+ebyp.Z$DIC
+#-245.0806
+
+###### Mixed Effects Model Class, Sex, and Class x Sex ####
+#Run the model
+ebys.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Sex + Sex*Eu_Pheomelanin - 1, 
+                   random = ~animal + Authors + us(SE_Z):units, 
+                   data=metadata, pedigree = tree, 
+                   nitt = 2000000, thin = 1000, burnin = 1000000, 
+                   prior = prior.ex2)
+ebys.Z$DIC
+#-246.4917
+
+
+###### COMBOS OF THREES ####
 ###### Run the model Class, Plasticity, and Sex ####
 #Run the model
 cps.Z <- MCMCglmm(Fisher_Z ~ Eu_Pheomelanin + Sex + Plasticity - 1, 
@@ -2870,7 +3034,7 @@ apply(rand,2,function(c) quantile(c,probs = c(0.025,0.5,0.975)))
 Rand_Var <- apply(rand,2,mean)
 Rand_Var
 #     animal         Authors         SE_Z:SE_Z.units   units 
-#0.008928226     0.020855223     0.968583115     0.001633437
+#0.008658133     0.020632088     0.968998857     0.001710922
 
 #varA = phylogenetic level variance
 varA <- Rand_Var[1] 
@@ -2891,23 +3055,23 @@ varT = varA + varS + varE + varM
 I2s <- varS/varT
 I2s*100
 #  Authors 
-#  2.085522
+# 2.063209
 
 ## species level heterogeneity I^2s = varA/varT
 I2u <- varA/varT
 I2u*100
 # animal 
-# 0.8928226
+# 0.8658133 
 
 ## total heterogeneity
 (I2s*100) + (I2u*100)
-#2.978345
+#2.929022 
 
 ## phylogenetic heritability, phylogenetic signal H2 = varA/varA + varS + varE
 H2 = varA/(varA + varS + varE)
 H2
 # animal 
-#0.2841856 
+#0.2792843 
 
 # Proportion of variance explained by random factors
 Sol <- color.Z$Sol/apply(color.Z$Sol,1,sum)
@@ -2919,14 +3083,14 @@ pred_matrix <- predict(color.Z, interval = "prediction")
 pred_interval <- apply(pred_matrix, 2, mean)
 pred_interval
 #      fit        lwr        upr 
-#0.2617406 -0.7548349  1.2800867
+#0.2551818 -0.7526698  1.2739840
 
 #### Get the posterior mean and 95% CI of the overall effect size ####
 pred_matrix <- predict(color.Z, interval = "confidence")
 confidence <- apply(pred_matrix, 2, mean)
 confidence
 #      fit        lwr        upr 
-#0.25903120 -0.03201199  0.58309319  
+#0.25697879 -0.05568362  0.57507478  
 
 #### publication bias ####
 # getting predictions (raw data - predictions = meta-analytic residuals)
@@ -2941,8 +3105,8 @@ summary(Egger)
 
 #Coefficients:
 #             Estimate Std. Error t value Pr(>|t|)  
-#(Intercept) 0.45278    0.36760   1.232    0.220
-#Precision   -0.06848    0.04358  -1.571    0.118
+#(Intercept) 0.42765    0.36746   1.164    0.246
+#Precision   -0.06134    0.04395  -1.396    0.165
 #  ---
 #  Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
@@ -2957,7 +3121,7 @@ Trim_Fill
 #Number of studies combined: k = 158 (with 0 added studies)
 
 #                                       95%-CI    z p-value
-#Random effects model 0.0156 [-0.0572; 0.0884] 0.42  0.6735
+#Random effects model 0.0185 [-0.0538; 0.0907] 0.50  0.6158
 
 
 cols <- rep(0,158)
@@ -3013,11 +3177,12 @@ for(i in 1:8){
 #### Medians and 95% Credible Intervals ####
 emmeans(color.Z, ~ Eu_Pheomelanin, data=metadata, level = 0.95)
 #Eu_Pheomelanin emmean lower.HPD upper.HPD
-#carotenoid      0.137   -0.0929     0.439
-#eumelanin       0.315    0.0589     0.598
-#pheomelanin     0.210   -0.1306     0.610
-#structural      0.236   -0.2183     0.672
-#unknown         0.441    0.0757     0.840
+#carotenoid      0.1206   -0.1645     0.388
+#eumelanin       0.3282    0.0559     0.608
+#pheomelanin     0.2166   -0.1038     0.624
+#pteridine      -0.0944   -0.8887     0.782
+#structural      0.2365   -0.2244     0.660
+#unknown         0.4328    0.0613     0.827
 #Point estimate displayed: median 
 #HPD interval probability: 0.95
 Zcar <- 0.137; lcar <- -0.0929; ucar <- 0.439
