@@ -1,5 +1,5 @@
 #Meta-Analysis Effect Size Calculations
-setwd("C:\\Users\\sarah\\Documents\\GitHub\\meta-analysis")
+setwd("C:\\Users\\sarah\\Documents\\meta-analysis")
 
 library(DescTools)
 
@@ -73,6 +73,7 @@ for (i in 1:length(metadat$Study)){
   } 
 }
 missingrow <- subset(missingrow, missingrow != 0)
-missingrow
+missingrow #Check for missed rows
 
+#Create csv file with correlation and Fisher Z values
 write.csv(metadat, "meta_complete_data2.csv")

@@ -24,6 +24,7 @@ Malurus melanocephalus
 Manacus candei
 Manacus vitellinus
 Melospiza melodia
+Millerichthys robustus
 Mnais costalis
 Mus musculus
 Neogonodactylus oerstedii
@@ -38,8 +39,12 @@ Phymactis clematis
 Plethodon cinereus
 Podarcis siculus
 Poecilia reticulata
+Pogona vitticeps
 Polistes gallicus
+Pristidactylus achalensis
 Pseudemoia entrecasteauxii
+Ranitomeya imitator
+Remiz pendulinus
 Salmo salar
 Sceloporus occidentalis
 Sceloporus undulatus
