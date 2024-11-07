@@ -78,7 +78,7 @@ prior.ex <- list(G = list(G1 = list(V = 1, nu = 0.02, alpha.mu = 0.4, alpha.V = 
 
 #Run the model:
 allRnd.Z <- MCMCglmm(Fisher_Z ~ 1, random = ~animal + Authors + us(SE_Z):units,
-                        data=metadatas, pedigree = tree, 
+                        data=metadata, pedigree = tree, 
                         nitt = 5000000, thin = 1000, burnin = 2500000, 
                         prior = prior.ex)
 
@@ -271,7 +271,7 @@ weight.Z$DIC
 ################ RANDOM EFFECTS SUBSET BY ####
 #### Run the model subset by social rank uncontrolled removed ####
 #Subset data by removing papers that did not control for social rank
-rankcon <- metadatas[metadatas$Social_Rank_Controlled != "uncontrolled",]
+rankcon <- metadata[metadata$Social_Rank_Controlled != "uncontrolled",]
 
 #load the model
 load("R Files/rsocial_Z.RDATA")
@@ -512,7 +512,7 @@ FTF_plot <- meta::funnel(Trim_Fill, yaxis="invse", xlim = c(-3,3),
 
 
 #### Run the model subset by condition uncontrolled removed ####
-condcon <- metadatas[metadatas$Condition != "None measured",]
+condcon <- metadata[metadata$Condition != "None measured",]
 
 #load the model
 load("R Files/rcond_Z.RDATA")
@@ -1001,7 +1001,7 @@ for(i in 1:2){
 
 #### Run the model subset by age uncontrolled removed ####
 #Subset data by removing papers that did not control for age
-agecon <- metadatas[metadatas$Age_Controlled != "uncontrolled",]
+agecon <- metadata[metadata$Age_Controlled != "uncontrolled",]
 
 #load the model
 load("R Files/rage_Z.RDATA")
