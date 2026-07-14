@@ -1,12 +1,10 @@
 # Assessing the association between animal color and behavior
 
-Data and analysis code for a phylogenetic Bayesian meta-analysis of the association between color and aggression across animal taxa, and for a subsequent reply to a published critique.
+Data and analysis code for a phylogenetic Bayesian meta-analysis of the association between color and aggression across animal taxa.
 
-## Papers
+## Paper
 
-**Original paper.** Ruckman, S. N., Humphrey, E. A., Muzzey, L., Prantalou, I., Pleasants, M., and Hughes, K. A. (2024). Assessing the association between animal color and behavior: a meta-analysis of experimental studies. *Ecology and Evolution* 14: e70655.
-
-**Reply paper.** Ruckman, S. N. and Humphrey, E. A. Toward shared standards in evolutionary meta-analysis: a reply to Sánchez-Tójar and D'Amelio (2026). *Ecology and Evolution* (in press). DOI: [to be added]
+Ruckman, S. N., Humphrey, E. A., Muzzey, L., Prantalou, I., Pleasants, M., and Hughes, K. A. (2024). Assessing the association between animal color and behavior: a meta-analysis of experimental studies. *Ecology and Evolution* 14: e70655.
 
 ## Repository structure
 
@@ -33,7 +31,7 @@ Analysis code and saved models for the original paper.
 
 ### `response-analysis/`
 
-Corrected data, analysis code, results, and figures for the reply paper. This folder is self-contained. See `response-analysis/README.md` for details.
+Corrected data, analysis code, results, and figures from a re-analysis of the original dataset. This folder is self-contained. See `response-analysis/README.md` for details.
 
 Tagged as the release `response-analysis` on GitHub.
 
@@ -55,7 +53,7 @@ The full-length MCMC chains used for both the original paper and the reply run f
 
 ## Citation
 
-If you use data or code from this repository, please cite the original paper (Ruckman et al. 2024). If you use the corrected dataset or any analysis in `response-analysis/`, please also cite the reply paper.
+If you use data or code from this repository, please cite Ruckman et al. (2024).
 
 ## Contact
 
