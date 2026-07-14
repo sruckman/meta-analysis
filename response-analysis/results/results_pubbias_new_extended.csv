@@ -1,0 +1,7 @@
+"Method","Term","Estimate","CI","p"
+"Raw rho + MCMCglmm","(Intercept)","0.0779","[-0.2366, 0.4224]","0.6376"
+"Raw rho + MCMCglmm","sqrt_inv_n","0.8470","[-0.5181, 2.2314]","0.2216"
+"Fisher Z + metafor","intrcpt","0.1745","[-0.2507, 0.5998]","0.4212"
+"Fisher Z + metafor","sqrt_inv_n","0.5583","[-1.3584, 2.4750]","0.5681"
+"Raw r + metafor","intrcpt","0.0840","[-0.2064, 0.3744]","0.5708"
+"Raw r + metafor","sqrt_inv_n","0.7724","[-0.6142, 2.1590]","0.2749"

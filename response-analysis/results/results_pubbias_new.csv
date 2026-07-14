@@ -1,0 +1,5 @@
+"Dataset","Term","Estimate","CI","pMCMC","Test"
+"Original","(Intercept)","-0.5393","[-0.9307, -0.1447]","0.0072","Nakagawa 2022: Fisher_Z ~ sqrt(1/n)"
+"Original","sqrt_inv_n","4.9516","[2.9618, 6.9264]","0.0000","Nakagawa 2022: Fisher_Z ~ sqrt(1/n)"
+"Corrected","(Intercept)","0.1539","[-0.2826, 0.6333]","0.5176","Nakagawa 2022: Fisher_Z ~ sqrt(1/n)"
+"Corrected","sqrt_inv_n","0.6843","[-1.2711, 2.6610]","0.5176","Nakagawa 2022: Fisher_Z ~ sqrt(1/n)"

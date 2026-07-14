@@ -1,0 +1,7 @@
+"Dataset","Test","Estimate","SE_or_p"
+"Original","Egger intercept","0.7027","SE=0.3725 p=0.0609"
+"Original","Egger slope (Precision)","-0.1129","SE=0.0449 p=0.0129"
+"Original","Trim&Fill: k_after","169","studies_added=0"
+"Corrected","Egger intercept","0.0330","SE=0.8234 p=0.9680"
+"Corrected","Egger slope (Precision)","-0.0666","SE=0.1238 p=0.5913"
+"Corrected","Trim&Fill: k_after","147","studies_added=0"

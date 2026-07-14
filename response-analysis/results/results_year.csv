@@ -1,0 +1,5 @@
+"Dataset","Term","Estimate","CI","pMCMC"
+"Original","(Intercept)","8.5151","[-12.1069, 27.1404]","0.3904"
+"Original","Publication.Year","-0.0041","[-0.0134, 0.0061]","0.4056"
+"Corrected","(Intercept)","-1.0438","[-27.5591, 25.3950]","0.9496"
+"Corrected","Publication.Year","0.0007","[-0.0125, 0.0139]","0.9304"
